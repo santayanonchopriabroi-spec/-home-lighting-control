@@ -40,7 +40,6 @@
             box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
         }
 
-        /* Header Responsive */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 2rem; padding-bottom: 1.2rem;
@@ -63,17 +62,15 @@
             font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
             font-weight: 600; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
         }
-        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
         .live-badge.online { border-color: #86efac; color: #15803d; background: #f0fdf4; }
         .live-badge.online .indicator-dot { background: #22c55e; animation: pulse-green 1.5s infinite; }
         .live-badge.waiting { border-color: #fde047; color: #b45309; background: #fefce8; }
-        .live-badge.waiting .indicator-dot { display: none; } /* ซ่อนจุดเดิมเมื่อใช้ไอคอนหมุน */
 
         @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } }
 
         .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Lighting Grid */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
         @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; } }
 
@@ -92,7 +89,6 @@
         }
         .card.active .icon-box { background: #0ea5e9; color: #ffffff; border-color: #0ea5e9; box-shadow: 0 8px 16px rgba(2, 132, 199, 0.3); }
 
-        /* Switches */
         .advanced-switch {
             appearance: none; -webkit-appearance: none;
             width: 56px; height: 30px; background: #cbd5e1;
@@ -113,7 +109,6 @@
         .card-status { font-size: 0.85rem; color: #64748b; font-weight: 500; }
         .card.active .card-status { color: #0284c7; font-weight: 600; }
 
-        /* AC Module & Fan Animation */
         .ac-card {
             background: #ffffff; border: 1px solid #e2e8f0;
             border-radius: 28px; padding: 1.5rem;
@@ -134,7 +129,6 @@
 
         @keyframes fan-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .fan-blade { will-change: transform; transform: translateZ(0); }
-        /* กราฟฟิกพัดลมแอร์หมุนตลอดเวลาเมื่อเปิดแอร์ */
         .ac-card.active .fan-blade { animation: fan-spin 0.4s linear infinite; }
 
         .ac-controls { 
@@ -165,7 +159,6 @@
             <h1><i class="fa-solid fa-house-chimney"></i> Home Santayanon</h1>
             <div class="status-container">
                 <div id="connectionStatus" class="live-badge waiting">
-                    <!-- กราฟฟิกสถานะเชื่อมต่อ หมุนตลอดเวลาเมื่อกำลังเชื่อมต่อ -->
                     <i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>
                     <span id="statusText">กำลังเชื่อมต่อ...</span>
                 </div>
@@ -267,8 +260,7 @@
             console.log('Connected to MQTT Broker via WSS');
             const badge = document.getElementById('connectionStatus');
             badge.className = 'live-badge online';
-            // เปลี่ยนเป็นจุดเขียวเมื่อเชื่อมต่อสำเร็จ
-            document.getElementById('statusIcon'].outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
+            document.getElementById('statusIcon').outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
             document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
             client.subscribe(TOPIC_STATUS);
         });
@@ -285,8 +277,7 @@
         function setOfflineState() {
             const badge = document.getElementById('connectionStatus');
             badge.className = 'live-badge waiting';
-            // เปลี่ยนกลับเป็นไอคอนหมุนเมื่อรอสัญญาณ
-            document.getElementById('statusIcon'].outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
+            document.getElementById('statusIcon').outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
             document.getElementById('statusText').innerText = 'รอสัญญาณ...';
         }
 
