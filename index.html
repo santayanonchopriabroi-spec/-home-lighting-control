@@ -2,20 +2,20 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Santayanon - 240K Sensor Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Home Santayanon - Mobile Optimized Dashboard</title>
     <!-- Fonts, Icons & MQTT -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        /* 240K RESOLUTION ENGINE SETUP */
         * {
             box-sizing: border-box; margin: 0; padding: 0;
             font-family: 'Kanit', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            will-change: transform, opacity, box-shadow;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform, opacity;
         }
 
         body {
@@ -23,151 +23,153 @@
             background-attachment: fixed;
             color: #0f172a; 
             min-height: 100vh;
-            padding: 3rem 2rem;
-            display: flex; justify-content: center; align-items: center;
+            padding: 1rem;
+            display: flex; justify-content: center; align-items: flex-start;
             overflow-x: hidden;
             transform: translateZ(0); 
         }
 
         .dashboard {
-            width: 100%; max-width: 1250px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(60px) saturate(180%);
-            -webkit-backdrop-filter: blur(60px) saturate(180%);
+            width: 100%; max-width: 1200px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 48px; padding: 3.5rem;
-            box-shadow: 0 50px 120px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+            border-radius: 32px; 
+            padding: 1.5rem;
+            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
         }
 
+        /* Header Responsive */
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 3.5rem; padding-bottom: 2.5rem;
+            margin-bottom: 2rem; padding-bottom: 1.2rem;
             border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-            flex-wrap: wrap; gap: 2rem;
+            flex-wrap: wrap; gap: 1rem;
         }
 
         .header h1 {
-            font-size: 3rem; font-weight: 700;
+            font-size: 1.8rem; font-weight: 700;
             background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 24px;
-            filter: drop-shadow(0 8px 16px rgba(2, 132, 199, 0.15));
+            display: flex; align-items: center; gap: 12px;
+            filter: drop-shadow(0 4px 8px rgba(2, 132, 199, 0.15));
         }
 
-        /* ESP32 Status Badge */
-        .status-container { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .status-container { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
         .live-badge {
             background: #ffffff; border: 1px solid #cbd5e1;
-            padding: 0.8rem 1.8rem; border-radius: 60px;
-            font-size: 1rem; display: flex; align-items: center; gap: 14px;
-            font-weight: 600; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+            padding: 0.5rem 1rem; border-radius: 50px;
+            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+            font-weight: 600; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
         }
-        .indicator-dot { width: 14px; height: 14px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
+        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
         .live-badge.online { border-color: #86efac; color: #15803d; background: #f0fdf4; }
-        .live-badge.online .indicator-dot { background: #22c55e; animation: pulse-green 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .live-badge.online .indicator-dot { background: #22c55e; animation: pulse-green 1.5s infinite; }
         .live-badge.waiting { border-color: #fde047; color: #b45309; background: #fefce8; }
-        .live-badge.waiting .indicator-dot { background: #eab308; animation: pulse-yellow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .live-badge.waiting .indicator-dot { background: #eab308; animation: pulse-yellow 1.5s infinite; }
 
-        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); opacity: 1; } 50% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); opacity: 0.7; } }
-        @keyframes pulse-yellow { 0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5); opacity: 1; } 50% { box-shadow: 0 0 0 12px rgba(234, 179, 8, 0); opacity: 0.7; } }
+        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } }
+        @keyframes pulse-yellow { 0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); } }
 
-        .section-title { font-size: 1.3rem; color: #475569; margin-bottom: 2rem; display: flex; align-items: center; gap: 14px; font-weight: 700; letter-spacing: 1px; }
+        .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Lighting Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
+        /* Lighting Grid Optimized for Mobile (2 columns on mobile, auto-fit on desktop) */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; } }
+
         .card {
             background: rgba(255, 255, 255, 0.9); border: 1px solid #f1f5f9;
-            border-radius: 36px; padding: 2.2rem; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.03); transform: translateZ(0);
+            border-radius: 24px; padding: 1.2rem; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.03); transform: translateZ(0);
         }
-        .card:hover { border-color: #7dd3fc; transform: translateY(-8px) translateZ(0); box-shadow: 0 25px 50px rgba(2, 132, 199, 0.08); }
-        .card.active { background: #ffffff; border-color: #0ea5e9; box-shadow: 0 20px 45px rgba(2, 132, 199, 0.15), inset 0 0 0 2px #0ea5e9; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .card.active { background: #ffffff; border-color: #0ea5e9; box-shadow: 0 15px 30px rgba(2, 132, 199, 0.12), inset 0 0 0 2px #0ea5e9; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        
         .icon-box {
-            width: 70px; height: 70px; border-radius: 24px; background: #f8fafc;
+            width: 48px; height: 48px; border-radius: 16px; background: #f8fafc;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; color: #94a3b8; border: 1px solid #e2e8f0; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 1.3rem; color: #94a3b8; border: 1px solid #e2e8f0; transition: all 0.4s;
         }
-        .card.active .icon-box { background: #0ea5e9; color: #ffffff; border-color: #0ea5e9; box-shadow: 0 12px 25px rgba(2, 132, 199, 0.3); transform: scale(1.08); }
+        .card.active .icon-box { background: #0ea5e9; color: #ffffff; border-color: #0ea5e9; box-shadow: 0 8px 16px rgba(2, 132, 199, 0.3); }
 
-        /* Switches */
+        /* Switches Mobile Size */
         .advanced-switch {
             appearance: none; -webkit-appearance: none;
-            width: 72px; height: 38px; background: #cbd5e1;
+            width: 56px; height: 30px; background: #cbd5e1;
             border-radius: 50px; position: relative; cursor: pointer; outline: none;
-            box-shadow: inset 0 4px 8px rgba(15,23,42,0.1);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translateZ(0);
+            box-shadow: inset 0 2px 5px rgba(15,23,42,0.1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translateZ(0);
         }
         .advanced-switch::after {
-            content: ''; position: absolute; top: 2px; left: 3px;
-            width: 34px; height: 34px; background: #ffffff; border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(15,23,42,0.15); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 26px; height: 26px; background: #ffffff; border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(15,23,42,0.15); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .advanced-switch:checked { background: #0ea5e9; box-shadow: inset 0 3px 6px rgba(0,0,0,0.1), 0 0 20px rgba(14, 165, 233, 0.25); }
-        .advanced-switch:checked::after { left: calc(100% - 37px); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4); }
+        .advanced-switch:checked { background: #0ea5e9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(14, 165, 233, 0.25); }
+        .advanced-switch:checked::after { left: calc(100% - 28px); }
 
-        .ac-switch:checked { background: #10b981; box-shadow: inset 0 3px 6px rgba(0,0,0,0.1), 0 0 20px rgba(16, 185, 129, 0.25); }
-        .ac-switch:checked::after { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+        .ac-switch:checked { background: #10b981; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(16, 185, 129, 0.25); }
 
-        .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b; }
-        .card-status { font-size: 1rem; color: #64748b; font-weight: 500; transition: 0.4s;}
+        .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; color: #1e293b; }
+        .card-status { font-size: 0.85rem; color: #64748b; font-weight: 500; }
         .card.active .card-status { color: #0284c7; font-weight: 600; }
 
-        /* AC Module with Real Temp Display */
+        /* AC Module Mobile Optimized */
         .ac-card {
             background: #ffffff; border: 1px solid #e2e8f0;
-            border-radius: 42px; padding: 3rem 3.5rem;
-            display: flex; flex-wrap: wrap; gap: 3rem;
-            align-items: center; justify-content: space-between;
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.03);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); transform: translateZ(0);
+            border-radius: 28px; padding: 1.5rem;
+            display: flex; flex-direction: column; gap: 1.5rem;
+            box-shadow: 0 15px 30px rgba(15, 23, 42, 0.03);
+            transition: all 0.4s ease; transform: translateZ(0);
         }
-        .ac-card.active { background: #f0fdf4; border-color: #10b981; box-shadow: 0 25px 60px rgba(16, 185, 129, 0.12), inset 0 0 0 2px #10b981; }
+        @media (min-width: 768px) {
+            .ac-card { flex-direction: row; justify-content: space-between; padding: 2.5rem; }
+        }
+        .ac-card.active { background: #f0fdf4; border-color: #10b981; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1), inset 0 0 0 2px #10b981; }
 
-        .ac-info { display: flex; align-items: center; gap: 2.2rem; flex: 1 1 350px; }
+        .ac-info { display: flex; align-items: center; gap: 1.2rem; }
         .ac-icon {
-            width: 85px; height: 85px; border-radius: 28px;
+            width: 60px; height: 60px; border-radius: 20px;
             background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; border: 1px solid #e2e8f0; transition: all 0.6s;
+            font-size: 1.8rem; border: 1px solid #e2e8f0; transition: all 0.4s;
         }
-        .ac-card.active .ac-icon { background: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 15px 30px rgba(16, 185, 129, 0.35); }
+        .ac-card.active .ac-icon { background: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
 
         @keyframes fan-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .fan-blade { will-change: transform; transform: translateZ(0); }
         .ac-card.active .fan-blade { animation: fan-spin 0.4s linear infinite; }
         .ac-card.active .card-status { color: #059669; font-weight: 700; }
 
-        /* AC Controls & Dual Temperature Data */
+        /* AC Controls Container Mobile Stack */
         .ac-controls { 
-            display: flex; align-items: stretch; gap: 2.5rem; flex-wrap: wrap; 
-            background: #f8fafc; padding: 1.5rem; border-radius: 40px; border: 1px solid #f1f5f9; transition: 0.5s;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem; 
+            background: #f8fafc; padding: 1rem; border-radius: 20px; border: 1px solid #f1f5f9; width: 100%;
         }
-        .ac-card.active .ac-controls { background: #ffffff; border-color: #d1fae5; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.05); }
-
-        /* กล่องแสดงอุณหภูมิห้องจริงจากเซ็นเซอร์ */
-        .real-temp-box {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 0 2rem; border-right: 2px dashed #cbd5e1;
+        @media (min-width: 768px) {
+            .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; gap: 2rem; }
         }
-        .real-temp-label { font-size: 0.9rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .real-temp-value { font-size: 2.8rem; font-weight: 800; color: #f59e0b; line-height: 1; }
-        .real-temp-value span { font-size: 1.2rem; color: #94a3b8; }
+        .ac-card.active .ac-controls { background: #ffffff; border-color: #d1fae5; }
 
-        /* ส่วนตั้งค่าอุณหภูมิแอร์เป้าหมาย */
-        .target-temp-box { display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .target-temp-label { font-size: 0.9rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .temp-group { display: flex; align-items: center; gap: 1.5rem; }
+        .real-temp-box { display: flex; flex-direction: column; align-items: center; }
+        .real-temp-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .real-temp-value { font-size: 1.8rem; font-weight: 800; color: #f59e0b; line-height: 1; }
+        .real-temp-value span { font-size: 0.9rem; color: #94a3b8; }
+
+        .target-temp-box { display: flex; flex-direction: column; align-items: center; }
+        .target-temp-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .temp-group { display: flex; align-items: center; gap: 0.8rem; }
+        
         .temp-btn {
-            width: 45px; height: 45px; border-radius: 50%; border: 1px solid #e2e8f0;
-            background: #ffffff; color: #475569; font-size: 1.2rem; cursor: pointer; 
-            transition: all 0.3s; box-shadow: 0 4px 10px rgba(15,23,42,0.05);
+            width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e8f0;
+            background: #ffffff; color: #475569; font-size: 1rem; cursor: pointer; 
+            transition: all 0.2s; box-shadow: 0 2px 5px rgba(15,23,42,0.05);
         }
-        .temp-btn:hover { transform: scale(1.15); background: #0ea5e9; color: white; border-color: #0ea5e9; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3); }
-        .temp-display { font-size: 3.2rem; font-weight: 800; min-width: 90px; text-align: center; line-height: 1; letter-spacing: -2px; color: #0f172a; }
-        .temp-display span.unit { font-size: 1.4rem; font-weight: 600; vertical-align: top; color: #94a3b8;}
+        .temp-btn:active { transform: scale(0.9); }
+        .temp-display { font-size: 2.2rem; font-weight: 800; min-width: 65px; text-align: center; line-height: 1; color: #0f172a; }
+        .temp-display span.unit { font-size: 1rem; font-weight: 600; vertical-align: top; color: #94a3b8;}
 
-        .ac-switch-container { display: flex; align-items: center; margin-left: 1rem; }
-
+        .ac-switch-container { display: flex; align-items: center; }
     </style>
 </head>
 <body>
@@ -179,14 +181,14 @@
             <div class="status-container">
                 <div class="live-badge waiting" id="conn-badge">
                     <div class="indicator-dot"></div>
-                    <span id="conn-text">รอสัญญาณจากเซ็นเซอร์...</span>
+                    <span id="conn-text">รอสัญญาณ...</span>
                 </div>
-                <div style="font-size: 0.95rem; color: #64748b; margin-right: 20px; font-weight: 500;" id="last-seen">กำลังเตรียมระบบเครือข่าย...</div>
+                <div style="font-size: 0.75rem; color: #64748b; margin-right: 5px; font-weight: 500;" id="last-seen">กำลังเชื่อมต่อ...</div>
             </div>
         </div>
 
         <div class="section-title">
-            <i class="fa-solid fa-lightbulb" style="color: #0ea5e9; font-size: 1.5rem;"></i> ระบบไฟส่องสว่างส่วนกลาง (5 จุด)
+            <i class="fa-solid fa-lightbulb" style="color: #0ea5e9;"></i> ระบบไฟ (5 จุด)
         </div>
         <div class="grid">
             <div class="card" id="card-light1">
@@ -195,7 +197,7 @@
                     <input type="checkbox" class="advanced-switch" id="chk-light1" onchange="sendControl('light1', this.checked)">
                 </div>
                 <div class="card-title">ห้องนั่งเล่น</div>
-                <div class="card-status" id="status-light1">ปิดใช้งาน</div>
+                <div class="card-status" id="status-light1">ปิด</div>
             </div>
             <div class="card" id="card-light2">
                 <div class="card-header">
@@ -203,7 +205,7 @@
                     <input type="checkbox" class="advanced-switch" id="chk-light2" onchange="sendControl('light2', this.checked)">
                 </div>
                 <div class="card-title">ห้องนอนใหญ่</div>
-                <div class="card-status" id="status-light2">ปิดใช้งาน</div>
+                <div class="card-status" id="status-light2">ปิด</div>
             </div>
             <div class="card" id="card-light3">
                 <div class="card-header">
@@ -211,7 +213,7 @@
                     <input type="checkbox" class="advanced-switch" id="chk-light3" onchange="sendControl('light3', this.checked)">
                 </div>
                 <div class="card-title">ห้องครัว</div>
-                <div class="card-status" id="status-light3">ปิดใช้งาน</div>
+                <div class="card-status" id="status-light3">ปิด</div>
             </div>
             <div class="card" id="card-light4">
                 <div class="card-header">
@@ -219,9 +221,9 @@
                     <input type="checkbox" class="advanced-switch" id="chk-light4" onchange="sendControl('light4', this.checked)">
                 </div>
                 <div class="card-title">ห้องน้ำ</div>
-                <div class="card-status" id="status-light4">ปิดใช้งาน</div>
+                <div class="card-status" id="status-light4">ปิด</div>
             </div>
-            <div class="card" id="card-light5">
+            <div class="card" id="card-light5" style="grid-column: span 2;">
                 <div class="card-header">
                     <div class="icon-box"><i class="fa-solid fa-tree"></i></div>
                     <input type="checkbox" class="advanced-switch" id="chk-light5" onchange="sendControl('light5', this.checked)">
@@ -232,7 +234,7 @@
         </div>
 
         <div class="section-title">
-            <i class="fa-solid fa-snowflake" style="color: #10b981; font-size: 1.5rem;"></i> ระบบปรับอากาศส่วนกลางและสภาพแวดล้อม
+            <i class="fa-solid fa-snowflake" style="color: #10b981;"></i> ระบบปรับอากาศ
         </div>
         <div class="ac-card" id="ac-card">
             <div class="ac-info">
@@ -240,21 +242,19 @@
                     <i class="fa-solid fa-fan fan-blade"></i>
                 </div>
                 <div>
-                    <div class="card-title" style="font-size: 1.6rem;">แอร์ Inverter (ห้องโถง)</div>
-                    <div class="card-status" id="ac-status">ระบบสแตนด์บาย (ปิดใช้งาน)</div>
+                    <div class="card-title" style="font-size: 1.2rem;">แอร์ Inverter</div>
+                    <div class="card-status" id="ac-status">สแตนด์บาย</div>
                 </div>
             </div>
 
             <div class="ac-controls">
-                <!-- ข้อมูลอุณหภูมิห้องจริงจากเซ็นเซอร์ ESP32 -->
                 <div class="real-temp-box">
-                    <div class="real-temp-label">อุณหภูมิห้องจริง</div>
+                    <div class="real-temp-label">ห้องจริง</div>
                     <div class="real-temp-value" id="room-temp">--.-<span>°C</span></div>
                 </div>
 
-                <!-- ตั้งค่าอุณหภูมิแอร์เป้าหมาย -->
                 <div class="target-temp-box">
-                    <div class="target-temp-label">ตั้งอุณหภูมิแอร์เป้าหมาย</div>
+                    <div class="target-temp-label">ตั้งเป้าหมาย</div>
                     <div class="temp-group">
                         <button class="temp-btn" onclick="changeTemp(-1)"><i class="fa-solid fa-minus"></i></button>
                         <div class="temp-display" id="target-temp">25<span class="unit">°C</span></div>
@@ -270,7 +270,6 @@
     </div>
 
     <script>
-        // MQTT Topics สำหรับคุยกับ ESP32
         const TOPIC_CONTROL = "santayanon/home/control";
         const TOPIC_STATUS = "santayanon/home/status";
 
@@ -282,7 +281,6 @@
 
         client.on('connect', () => { client.subscribe(TOPIC_STATUS); });
 
-        // รับข้อมูลจาก ESP32
         client.on('message', (topic, message) => {
             if (topic === TOPIC_STATUS) {
                 lastHeartbeat = Date.now();
@@ -290,20 +288,17 @@
 
                 const data = JSON.parse(message.toString());
                 
-                // อัปเดตสถานะไฟ 5 ดวง
                 data.lights.forEach((isOn, idx) => {
                     const id = `light${idx + 1}`;
                     document.getElementById(`chk-${id}`).checked = isOn;
                     updateUI(id, isOn);
                 });
 
-                // อัปเดตสถานะแอร์ และอุณหภูมิ 2 ค่า
                 acState = data.ac.state;
                 acTargetTemp = data.ac.targetTemp;
                 document.getElementById('chk-ac').checked = acState;
                 document.getElementById('target-temp').innerHTML = `${acTargetTemp}<span class="unit">°C</span>`;
                 
-                // แสดงอุณหภูมิห้องจริง หากค่าไม่เป็น 0 (มีข้อมูลส่งมา)
                 if(data.ac.realTemp > 0) {
                     document.getElementById('room-temp').innerHTML = `${data.ac.realTemp}<span>°C</span>`;
                 }
@@ -312,7 +307,6 @@
             }
         });
 
-        // AI Check บอร์ด
         setInterval(() => {
             const now = Date.now();
             const badge = document.getElementById('conn-badge');
@@ -321,10 +315,10 @@
             
             if (now - lastHeartbeat > 8000) {
                 badge.className = 'live-badge';
-                text.innerText = 'ESP32 ออฟไลน์ - ขาดการเชื่อมต่อ';
-                timeText.innerText = 'ไม่พบสัญญาณจากฮาร์ดแวร์เซ็นเซอร์';
+                text.innerText = 'ออฟไลน์';
+                timeText.innerText = 'ขาดการเชื่อมต่อ';
             } else {
-                timeText.innerText = 'สถานะ: ฮาร์ดแวร์เซ็นเซอร์ทำงานปกติ 100%';
+                timeText.innerText = 'ออนไลน์ปกติ';
             }
         }, 2000);
 
@@ -333,7 +327,7 @@
             const text = document.getElementById('conn-text');
             if (!badge.classList.contains('online')) {
                 badge.className = 'live-badge online';
-                text.innerText = 'ESP32 ออนไลน์ - พร้อมทำงาน';
+                text.innerText = 'เชื่อมต่อแล้ว';
             }
         }
 
@@ -342,7 +336,6 @@
             client.publish(TOPIC_CONTROL, `${device}:${numVal}`);
         }
 
-        // ปรับอุณหภูมิแอร์
         function changeTemp(delta) {
             if(!acState) return;
             acTargetTemp = Math.min(Math.max(18, acTargetTemp + delta), 30);
@@ -353,15 +346,15 @@
         function updateUI(id, isOn) {
             const card = document.getElementById(`card-${id}`);
             const status = document.getElementById(`status-${id}`);
-            if(isOn) { card.classList.add('active'); status.innerText = 'กำลังส่องสว่าง'; } 
-            else { card.classList.remove('active'); status.innerText = 'ปิดใช้งาน'; }
+            if(isOn) { card.classList.add('active'); status.innerText = 'เปิด'; } 
+            else { card.classList.remove('active'); status.innerText = 'ปิด'; }
         }
 
         function updateACUI(isOn) {
             const card = document.getElementById('ac-card');
             const status = document.getElementById('ac-status');
-            if(isOn) { card.classList.add('active'); status.innerText = 'แอร์ทำงาน (คอยล์เย็นปั่นลม)'; } 
-            else { card.classList.remove('active'); status.innerText = 'ระบบสแตนด์บาย'; }
+            if(isOn) { card.classList.add('active'); status.innerText = 'กำลังทำงาน'; } 
+            else { card.classList.remove('active'); status.innerText = 'สแตนด์บาย'; }
         }
     </script>
 </body>
