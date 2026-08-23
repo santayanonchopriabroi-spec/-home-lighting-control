@@ -1,150 +1,57 @@
 <!DOCTYPE html>
-<html lang="th"> 
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Home Santayanon - Mobile Optimized Dashboard</title>
-    <!-- Fonts, Icons & MQTT -->
+    <!-- Fonts, Icons & MQTT (ใช้ Cloudflare CDN เสถียรสูงสุดบนเน็ตมือถือ) -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box; margin: 0; padding: 0;
-            font-family: 'Kanit', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background: radial-gradient(circle at 50% -20%, #ffffff 0%, #f1f5f9 60%, #e2e8f0 100%);
-            background-attachment: fixed;
-            color: #0f172a; 
-            min-height: 100vh;
-            padding: 1rem;
-            display: flex; justify-content: center; align-items: flex-start;
-        }
-
-        .dashboard {
-            width: 100%; max-width: 1200px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 32px; 
-            padding: 1.5rem;
-            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
-        }
-
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2rem; padding-bottom: 1.2rem;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-            flex-wrap: wrap; gap: 1rem;
-        }
-
-        .header h1 {
-            font-size: 1.8rem; font-weight: 700;
-            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 12px;
-        }
-
-        .status-container { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-        .live-badge {
-            background: #ffffff; border: 1px solid #cbd5e1;
-            padding: 0.5rem 1rem; border-radius: 50px;
-            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
-            font-weight: 600; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-        }
-        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kanit', sans-serif; }
+        body { background: #f1f5f9; color: #0f172a; min-height: 100vh; padding: 1rem; display: flex; justify-content: center; align-items: flex-start; }
+        .dashboard { width: 100%; max-width: 1200px; background: rgba(255, 255, 255, 0.9); border-radius: 32px; padding: 1.5rem; box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; color: #0284c7; display: flex; align-items: center; gap: 12px; }
+        .live-badge { background: #ffffff; border: 1px solid #cbd5e1; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        
+        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); display: inline-block; }
         .live-badge.online { border-color: #86efac; color: #15803d; background: #f0fdf4; }
-        .live-badge.online .indicator-dot { background: #22c55e; animation: pulse-green 1.5s infinite; }
         .live-badge.waiting { border-color: #fde047; color: #b45309; background: #fefce8; }
-
-        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } }
-
-        .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-
+        
+        .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; font-weight: 700; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
         @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; } }
-
-        .card {
-            background: rgba(255, 255, 255, 0.9); border: 1px solid #f1f5f9;
-            border-radius: 24px; padding: 1.2rem; transition: all 0.4s ease;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.03);
-        }
-        .card.active { background: #ffffff; border-color: #0ea5e9; box-shadow: 0 15px 30px rgba(2, 132, 199, 0.12), inset 0 0 0 2px #0ea5e9; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 1.2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
+        .card.active { border-color: #0ea5e9; box-shadow: 0 10px 20px rgba(14, 165, 233, 0.15); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        
-        .icon-box {
-            width: 48px; height: 48px; border-radius: 16px; background: #f8fafc;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; color: #94a3b8; border: 1px solid #e2e8f0;
-        }
-        .card.active .icon-box { background: #0ea5e9; color: #ffffff; border-color: #0ea5e9; box-shadow: 0 8px 16px rgba(2, 132, 199, 0.3); }
-
-        .advanced-switch {
-            appearance: none; -webkit-appearance: none;
-            width: 56px; height: 30px; background: #cbd5e1;
-            border-radius: 50px; position: relative; cursor: pointer; outline: none;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .advanced-switch::after {
-            content: ''; position: absolute; top: 2px; left: 2px;
-            width: 26px; height: 26px; background: #ffffff; border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(15,23,42,0.15); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .advanced-switch:checked { background: #0ea5e9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(14, 165, 233, 0.25); }
+        .icon-box { width: 48px; height: 48px; border-radius: 16px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #94a3b8; border: 1px solid #e2e8f0; }
+        .card.active .icon-box { background: #0ea5e9; color: #ffffff; }
+        .advanced-switch { appearance: none; width: 56px; height: 30px; background: #cbd5e1; border-radius: 50px; position: relative; cursor: pointer; outline: none; transition: 0.3s; }
+        .advanced-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; background: #ffffff; border-radius: 50%; transition: 0.3s; }
+        .advanced-switch:checked { background: #0ea5e9; }
         .advanced-switch:checked::after { left: calc(100% - 28px); }
-        .ac-switch:checked { background: #10b981 !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(16, 185, 129, 0.25) !important; }
-
-        .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; color: #1e293b; }
+        .ac-switch:checked { background: #10b981 !important; }
+        .card-title { font-size: 1rem; font-weight: 700; color: #1e293b; }
         .card-status { font-size: 0.85rem; color: #64748b; font-weight: 500; }
-        .card.active .card-status { color: #0284c7; font-weight: 600; }
-
-        .ac-card {
-            background: #ffffff; border: 1px solid #e2e8f0;
-            border-radius: 28px; padding: 1.5rem;
-            display: flex; flex-direction: column; gap: 1.5rem;
-            box-shadow: 0 15px 30px rgba(15, 23, 42, 0.03);
-            margin-bottom: 2rem;
-        }
+        
+        .ac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
         @media (min-width: 768px) { .ac-card { flex-direction: row; justify-content: space-between; padding: 2.5rem; } }
-        .ac-card.active { background: #f0fdf4; border-color: #10b981; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1), inset 0 0 0 2px #10b981; }
-
+        .ac-card.active { border-color: #10b981; }
         .ac-info { display: flex; align-items: center; gap: 1.2rem; }
-        .ac-icon {
-            width: 60px; height: 60px; border-radius: 20px;
-            background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; border: 1px solid #e2e8f0;
-        }
-        .ac-card.active .ac-icon { background: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
-        .ac-card.active .card-status { color: #059669; font-weight: 700; }
-
+        .ac-icon { width: 60px; height: 60px; border-radius: 20px; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+        .ac-card.active .ac-icon { background: #10b981; color: #ffffff; }
         @keyframes fan-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .fan-blade { will-change: transform; }
         .ac-card.active .fan-blade { animation: fan-spin 0.4s linear infinite; }
-
-        .ac-controls { 
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem; 
-            background: #f8fafc; padding: 1rem; border-radius: 20px; border: 1px solid #f1f5f9; width: 100%;
-            flex-wrap: wrap;
-        }
-        @media (min-width: 768px) { .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; gap: 1.5rem; flex-wrap: nowrap; } }
-
+        .ac-controls { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 20px; width: 100%; flex-wrap: wrap; }
+        @media (min-width: 768px) { .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; flex-wrap: nowrap; } }
         .real-temp-box, .target-temp-box { display: flex; flex-direction: column; align-items: center; }
         .real-temp-label, .target-temp-label { font-size: 0.70rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .real-temp-value { font-size: 1.5rem; font-weight: 800; color: #f59e0b; line-height: 1; }
-        .real-hum-value { font-size: 1.5rem; font-weight: 800; color: #0ea5e9; line-height: 1; }
+        .real-temp-value { font-size: 1.5rem; font-weight: 800; color: #f59e0b; }
+        .real-hum-value { font-size: 1.5rem; font-weight: 800; color: #0ea5e9; }
         .temp-group { display: flex; align-items: center; gap: 0.8rem; margin-top: 4px; }
-        
-        .temp-btn {
-            width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e8f0;
-            background: #ffffff; color: #475569; font-size: 1rem; cursor: pointer; 
-            box-shadow: 0 2px 5px rgba(15,23,42,0.05);
-        }
+        .temp-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-size: 1rem; cursor: pointer; }
         .temp-display { font-size: 1.5rem; font-weight: 800; color: #1e293b; min-width: 40px; text-align: center; }
 
         /* หน้าจอ Serial Monitor จำลองขนาดใหญ่ สีเขียวเรืองแสง */
@@ -254,144 +161,154 @@
 
         <div class="section-title"><i class="fa-solid fa-desktop"></i> หน้าจอแสดงผลสถานะจริงจากบอร์ด (Serial Monitor Simulation)</div>
         <div class="system-log-box" id="liveLogContent">
-            <div style="color: #facc15;">[SYSTEM] กำลังเชื่อมต่อ EMQX Broker (พอร์ต 8084)...</div>
+            <div style="color: #facc15;">[SYSTEM] กำลังเชื่อมต่อ EMQX Broker...</div>
         </div>
     </div>
 
     <script>
-        // ใช้ Broker ของ EMQX ผ่านพอร์ต WSS 8084 ซึ่งเสถียรและเชื่อมต่อผ่าน HTTPS ได้ 100% ไม่โดนบล็อก
         const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
         const TOPIC_CONTROL = 'santayanon/home/control';
         const TOPIC_STATUS = 'santayanon/home/status';
 
-        const client = mqtt.connect(brokerUrl, {
-            clientId: 'web_client_' + Math.random().toString(16).substr(2, 8),
-            clean: true,
-            connectTimeout: 5000,
-            reconnectPeriod: 2000
-        });
-
+        let client;
         let espTimeout = null;
 
-        client.on('connect', () => {
-            console.log('Connected to EMQX Broker via WSS');
-            client.subscribe(TOPIC_STATUS);
-        });
+        try {
+            client = mqtt.connect(brokerUrl, {
+                clientId: 'web_client_' + Math.random().toString(16).substr(2, 8),
+                clean: true,
+                connectTimeout: 5000,
+                reconnectPeriod: 2000
+            });
+        } catch (e) {
+            console.error('MQTT Connect Error:', e);
+        }
 
-        client.on('offline', () => {
-            setOfflineUI('ขาดการเชื่อมต่อเครือข่าย');
-        });
+        if (client) {
+            client.on('connect', () => {
+                console.log('Connected to EMQX Broker via WSS');
+                client.subscribe(TOPIC_STATUS);
+            });
 
-        client.on('error', (err) => {
-            console.error('MQTT Error:', err);
-            setOfflineUI('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-        });
+            client.on('offline', () => {
+                setOfflineUI('ขาดการเชื่อมต่อเครือข่าย');
+            });
+
+            client.on('error', (err) => {
+                console.error('MQTT Error:', err);
+                setOfflineUI('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+            });
+
+            client.on('message', (topic, payload) => {
+                if (topic === TOPIC_STATUS) {
+                    clearTimeout(espTimeout);
+                    setConnectedUI();
+
+                    espTimeout = setTimeout(() => {
+                        setOfflineUI('บอร์ด ESP32 ออฟไลน์ / ถูกถอดปลั๊ก');
+                    }, 7000);
+
+                    try {
+                        const data = JSON.parse(payload.toString());
+                        
+                        let l1 = data.lights && data.lights[0] ? '🟢 เปิด' : '🔴 ปิด';
+                        let l2 = data.lights && data.lights[1] ? '🟢 เปิด' : '🔴 ปิด';
+                        let l3 = data.lights && data.lights[2] ? '🟢 เปิด' : '🔴 ปิด';
+                        let l4 = data.lights && data.lights[3] ? '🟢 เปิด' : '🔴 ปิด';
+                        let l5 = data.lights && data.lights[4] ? '🟢 เปิด' : '🔴 ปิด';
+                        
+                        let acSt = data.ac && data.ac.state ? '🟢 เปิดทำงาน' : '🔴 ปิดการทำงาน';
+                        let tTemp = data.ac && data.ac.targetTemp !== undefined ? data.ac.targetTemp : 25;
+                        let rTemp = data.ac && data.ac.realTemp !== undefined ? data.ac.realTemp.toFixed(1) : '--';
+                        let rHum = data.ac && data.ac.realHumidity !== undefined ? data.ac.realHumidity.toFixed(1) : '--';
+
+                        if (data.lights) {
+                            for (let i = 0; i < 5; i++) {
+                                const state = data.lights[i] ? true : false;
+                                document.getElementById('light' + (i + 1)).checked = state;
+                                const card = document.getElementById('card-light' + (i + 1));
+                                const statusText = document.getElementById('status-light' + (i + 1));
+                                if (state) {
+                                    card.classList.add('active');
+                                    statusText.innerText = 'เปิด';
+                                } else {
+                                    card.classList.remove('active');
+                                    statusText.innerText = 'ปิด';
+                                }
+                            }
+                        }
+
+                        if (data.ac) {
+                            const acState = data.ac.state ? true : false;
+                            document.getElementById('acToggle').checked = acState;
+                            const acCard = document.getElementById('acCard');
+                            const acStatusText = document.getElementById('acStatusText');
+                            if (acState) {
+                                acCard.classList.add('active');
+                                acStatusText.innerText = 'เปิดทำงาน';
+                            } else {
+                                acCard.classList.remove('active');
+                                acStatusText.innerText = 'ปิดการทำงาน';
+                            }
+                            document.getElementById('targetTemp').innerText = tTemp;
+                            document.getElementById('realTemp').innerText = rTemp + '°C';
+                            document.getElementById('realHum').innerText = rHum + '%';
+                        }
+
+                        const logBox = document.getElementById('liveLogContent');
+                        logBox.innerHTML = `
+                            <div class="log-header-title">----------------------------------------</div>
+                            <div style="color: #38bdf8;">📥 [STATUS RECEIVED FROM ESP32]</div>
+                            <div>- ไฟห้องนั่งเล่น (จุด 1): ${l1}</div>
+                            <div>- ไฟห้องนอนใหญ่ (จุด 2): ${l2}</div>
+                            <div>- ไฟห้องครัว (จุด 3):     ${l3}</div>
+                            <div>- ไฟห้องน้ำ (จุด 4):     ${l4}</div>
+                            <div>- ไฟระเบียง (จุด 5):     ${l5}</div>
+                            <div>- แอร์หลัก:              ${acSt}</div>
+                            <div>- อุณหภูมิเป้าหมาย:     ${tTemp} °C</div>
+                            <div>- อุณหภูมิห้องจริง (DHT): ${rTemp} °C</div>
+                            <div>- ความชื้นจริง (DHT):     ${rHum} %</div>
+                            <div class="log-header-title">----------------------------------------</div>
+                        `;
+
+                    } catch (e) {
+                        console.error('JSON Parse error:', e);
+                    }
+                }
+            });
+        }
+
+        function setConnectedUI() {
+            const badge = document.getElementById('connectionStatus');
+            const icon = document.getElementById('statusIcon');
+            const text = document.getElementById('statusText');
+            if (badge) badge.className = 'live-badge online';
+            if (icon) icon.className = 'indicator-dot';
+            if (text) text.innerText = 'เชื่อมต่อแล้ว';
+        }
 
         function setOfflineUI(reason) {
             const badge = document.getElementById('connectionStatus');
-            badge.className = 'live-badge waiting';
-            document.getElementById('statusIcon').outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
-            document.getElementById('statusText').innerText = 'รอสัญญาณ...';
-            document.getElementById('liveLogContent').innerHTML = `
-                <div style="color: #ef4444; font-weight: bold;">[ERROR] ${reason}</div>
-            `;
-        }
-
-        client.on('message', (topic, payload) => {
-            if (topic === TOPIC_STATUS) {
-                clearTimeout(espTimeout);
-                
-                const badge = document.getElementById('connectionStatus');
-                badge.className = 'live-badge online';
-                document.getElementById('statusIcon').outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
-                document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
-
-                espTimeout = setTimeout(() => {
-                    badge.className = 'live-badge waiting';
-                    document.getElementById('statusIcon'].outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
-                    document.getElementById('statusText').innerText = 'รอสัญญาณ (ESP32 ออฟไลน์)';
-                    document.getElementById('liveLogContent').innerHTML = `
-                        <div style="color: #ef4444; font-weight: bold;">[WARNING] บอร์ด ESP32 ออฟไลน์ / ถูกถอดปลั๊ก!</div>
-                    `;
-                }, 7000);
-
-                try {
-                    const data = JSON.parse(payload.toString());
-                    
-                    let l1 = data.lights && data.lights[0] ? '🟢 เปิด' : '🔴 ปิด';
-                    let l2 = data.lights && data.lights[1] ? '🟢 เปิด' : '🔴 ปิด';
-                    let l3 = data.lights && data.lights[2] ? '🟢 เปิด' : '🔴 ปิด';
-                    let l4 = data.lights && data.lights[3] ? '🟢 เปิด' : '🔴 ปิด';
-                    let l5 = data.lights && data.lights[4] ? '🟢 เปิด' : '🔴 ปิด';
-                    
-                    let acSt = data.ac && data.ac.state ? '🟢 เปิดทำงาน' : '🔴 ปิดการทำงาน';
-                    let tTemp = data.ac && data.ac.targetTemp !== undefined ? data.ac.targetTemp : 25;
-                    let rTemp = data.ac && data.ac.realTemp !== undefined ? data.ac.realTemp.toFixed(1) : '--';
-                    let rHum = data.ac && data.ac.realHumidity !== undefined ? data.ac.realHumidity.toFixed(1) : '--';
-
-                    if (data.lights) {
-                        for (let i = 0; i < 5; i++) {
-                            const state = data.lights[i] ? true : false;
-                            document.getElementById('light' + (i + 1)).checked = state;
-                            const card = document.getElementById('card-light' + (i + 1));
-                            const statusText = document.getElementById('status-light' + (i + 1));
-                            if (state) {
-                                card.classList.add('active');
-                                statusText.innerText = 'เปิด';
-                            } else {
-                                card.classList.remove('active');
-                                statusText.innerText = 'ปิด';
-                            }
-                        }
-                    }
-
-                    if (data.ac) {
-                        const acState = data.ac.state ? true : false;
-                        document.getElementById('acToggle').checked = acState;
-                        const acCard = document.getElementById('acCard');
-                        const acStatusText = document.getElementById('acStatusText');
-                        if (acState) {
-                            acCard.classList.add('active');
-                            acStatusText.innerText = 'เปิดทำงาน';
-                        } else {
-                            acCard.classList.remove('active');
-                            acStatusText.innerText = 'ปิดการทำงาน';
-                        }
-                        document.getElementById('targetTemp').innerText = tTemp;
-                        document.getElementById('realTemp').innerText = rTemp + '°C';
-                        document.getElementById('realHum').innerText = rHum + '%';
-                    }
-
-                    const logBox = document.getElementById('liveLogContent');
-                    logBox.innerHTML = `
-                        <div class="log-header-title">----------------------------------------</div>
-                        <div style="color: #38bdf8;">📥 [STATUS RECEIVED FROM ESP32]</div>
-                        <div>- ไฟห้องนั่งเล่น (จุด 1): ${l1}</div>
-                        <div>- ไฟห้องนอนใหญ่ (จุด 2): ${l2}</div>
-                        <div>- ไฟห้องครัว (จุด 3):     ${l3}</div>
-                        <div>- ไฟห้องน้ำ (จุด 4):     ${l4}</div>
-                        <div>- ไฟระเบียง (จุด 5):     ${l5}</div>
-                        <div>- แอร์หลัก:              ${acSt}</div>
-                        <div>- อุณหภูมิเป้าหมาย:     ${tTemp} °C</div>
-                        <div>- อุณหภูมิห้องจริง (DHT): ${rTemp} °C</div>
-                        <div>- ความชื้นจริง (DHT):     ${rHum} %</div>
-                        <div class="log-header-title">----------------------------------------</div>
-                    `;
-
-                } catch (e) {
-                    console.error('JSON Parse error:', e);
-                }
+            const icon = document.getElementById('statusIcon');
+            const text = document.getElementById('statusText');
+            if (badge) badge.className = 'live-badge waiting';
+            if (icon) icon.className = 'fa-solid fa-spinner fa-spin';
+            if (text) text.innerText = 'รอสัญญาณ...';
+            
+            const logBox = document.getElementById('liveLogContent');
+            if (logBox) {
+                logBox.innerHTML = `<div style="color: #ef4444; font-weight: bold;">[WARNING] ${reason}</div>`;
             }
-        });
+        }
 
         function controlLight(index) {
             const state = document.getElementById('light' + index).checked ? 1 : 0;
-            client.publish(TOPIC_CONTROL, `light${index}:${state}`);
+            if (client) client.publish(TOPIC_CONTROL, `light${index}:${state}`);
         }
 
         function controlAC() {
             const state = document.getElementById('acToggle').checked ? 1 : 0;
-            client.publish(TOPIC_CONTROL, `ac:${state}`);
+            if (client) client.publish(TOPIC_CONTROL, `ac:${state}`);
         }
 
         let currentTemp = 25;
@@ -400,7 +317,7 @@
             if (currentTemp < 16) currentTemp = 16;
             if (currentTemp > 30) currentTemp = 30;
             document.getElementById('targetTemp').innerText = currentTemp;
-            client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
+            if (client) client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
         }
     </script>
 </body>
