@@ -1,1 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Santayanon - Worldwide Cloud Dashboard</title>
+    <!-- Font, Icons & MQTT WebSockets Library -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: 'Kanit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
 
+        body {
+            background: radial-gradient(circle at 50% 10%, #151928 0%, #08090d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 1100px;
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 36px;
+            padding: 2.5rem;
+            box-shadow: 0 50px 120px rgba(0, 0, 0, 0.9), 0 0 60px rgba(0, 242, 254, 0.08);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            filter: drop-shadow(0 0 20px rgba(0, 242, 254, 0.4));
+        }
+
+        .live-badge {
+            background: rgba(0, 230, 118, 0.12);
+            border: 1px solid rgba(0, 230, 118, 0.4);
+            color: #00e676;
+            padding: 0.6rem 1.4rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.15);
+        }
+
+        .live-badge.offline {
+            background: rgba(255, 82, 82, 0.12);
+            border-color: rgba(255, 82, 82, 0.4);
+            color: #ff5252;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 26px;
+            padding: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .card.active {
+            background: rgba(0, 242, 254, 0.08);
+            border-color: rgba(0, 242, 254, 0.5);
+            box-shadow: 0 15px 35px rgba(0, 242, 254, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .icon-box {
+            width: 52px; height: 52px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #64748b;
+            transition: 0.4s;
+        }
+
+        .card.active .icon-box {
+            background: #00f2fe; color: #07090e;
+            box-shadow: 0 0 25px #00f2fe;
+        }
+
+        .switch {
+            position: relative; display: inline-block;
+            width: 50px; height: 28px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.12);
+            transition: .4s; border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider:before {
+            position: absolute; content: "";
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background-color: #ffffff; transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #00f2fe; border-color: #00f2fe; }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #07090e; }
+
+        .card-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 0.3rem; }
+        .card-status { font-size: 0.85rem; color: #64748b; }
+        .card.active .card-status { color: #00f2fe; font-weight: 500; }
+
+        .ac-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 2rem 2.5rem;
+            display: flex; flex-wrap: wrap; gap: 2rem;
+            align-items: center; justify-content: space-between;
+            transition: 0.4s;
+        }
+
+        .ac-card.active {
+            background: rgba(0, 230, 118, 0.06);
+            border-color: rgba(0, 230, 118, 0.4);
+            box-shadow: 0 15px 40px rgba(0, 230, 118, 0.15);
+        }
+
+        .ac-info { display: flex; align-items: center; gap: 1.5rem; }
+        .ac-icon {
+            width: 60px; height: 60px; border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05); color: #64748b;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem; transition: 0.4s;
+        }
+
+        .ac-card.active .ac-icon {
+            background: #00e676; color: #07090e;
+            box-shadow: 0 0 30px #00e676;
+        }
+
+        .temp-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05); color: #ffffff;
+            font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+        }
+
+        .temp-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .temp-display { font-size: 2.5rem; font-weight: 600; min-width: 90px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <div class="header">
+            <h1><i class="fa-solid fa-house-signal"></i> Home Santayanon</h1>
+            <div class="live-badge" id="conn-badge">
+                <i class="fa-solid fa-globe"></i> <span id="conn-text">Connecting Cloud...</span>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <i class="fa-solid fa-lightbulb" style="color: #00f2fe;"></i> ระบบไฟส่องสว่าง (5 จุด)
+        </div>
+        <div class="grid">
+            <div class="card" id="card-light1">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-couch"></i></div>
+                    <label class="switch"><input type="checkbox" id="chk-light1" onchange="sendControl('light1', this.checked)"><span class="slider"></span></label>
+                </div>
+                <div class="card-title">ห้องนั่งเล่น</div>
+                <div class="card-status" id="status-light1">ปิดใช้งาน</div>
+            </div>
+
+            <div class="card" id="card-light2">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-bed"></i></div>
+                    <label class="switch"><input type="checkbox" id="chk-light2" onchange="sendControl('light2', this.checked)"><span class="slider"></span></label>
+                </div>
+                <div class="card-title">ห้องนอนใหญ่</div>
+                <div class="card-status" id="status-light2">ปิดใช้งาน</div>
+            </div>
+
+            <div class="card" id="card-light3">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-utensils"></i></div>
+                    <label class="switch"><input type="checkbox" id="chk-light3" onchange="sendControl('light3', this.checked)"><span class="slider"></span></label>
+                </div>
+                <div class="card-title">ห้องครัว</div>
+                <div class="card-status" id="status-light3">ปิดใช้งาน</div>
+            </div>
+
+            <div class="card" id="card-light4">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-bath"></i></div>
+                    <label class="switch"><input type="checkbox" id="chk-light4" onchange="sendControl('light4', this.checked)"><span class="slider"></span></label>
+                </div>
+                <div class="card-title">ห้องน้ำ</div>
+                <div class="card-status" id="status-light4">ปิดใช้งาน</div>
+            </div>
+
+            <div class="card" id="card-light5">
+                <div class="card-header">
+                    <div class="icon-box"><i class="fa-solid fa-tree"></i></div>
+                    <label class="switch"><input type="checkbox" id="chk-light5" onchange="sendControl('light5', this.checked)"><span class="slider"></span></label>
+                </div>
+                <div class="card-title">ระเบียงหน้าบ้าน</div>
+                <div class="card-status" id="status-light5">ปิดใช้งาน</div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <i class="fa-solid fa-snowflake" style="color: #00e676;"></i> ระบบปรับอากาศ
+        </div>
+        <div class="ac-card" id="ac-card">
+            <div class="ac-info">
+                <div class="ac-icon"><i class="fa-solid fa-wind"></i></div>
+                <div>
+                    <div class="card-title" style="font-size: 1.25rem;">เครื่องปรับอากาศ (Inverter)</div>
+                    <div class="card-status" id="ac-status">สถานะ: ปิดใช้งาน</div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1.8rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="temp-btn" onclick="changeTemp(-1)"><i class="fa-solid fa-minus"></i></button>
+                    <div class="temp-display"><span id="ac-temp">25</span>°C</div>
+                    <button class="temp-btn" onclick="changeTemp(1)"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="chk-ac" onchange="sendControl('ac', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MQTT Topics ตรงกับบอร์ด ESP32
+        const TOPIC_CONTROL = "santayanon/home/control";
+        const TOPIC_STATUS = "santayanon/home/status";
+
+        let acTemp = 25;
+        let acState = false;
+
+        // เชื่อมต่อ MQTT Cloud SSL (เข้าถึงได้ทั่วโลกผ่าน HTTPS)
+        const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+
+        client.on('connect', () => {
+            document.getElementById('conn-badge').classList.remove('offline');
+            document.getElementById('conn-text').innerText = "Worldwide Online";
+            client.subscribe(TOPIC_STATUS);
+        });
+
+        client.on('offline', () => {
+            document.getElementById('conn-badge').classList.add('offline');
+            document.getElementById('conn-text').innerText = "Cloud Disconnected";
+        });
+
+        // รับสถานะ Real-time จาก ESP32
+        client.on('message', (topic, message) => {
+            if (topic === TOPIC_STATUS) {
+                const data = JSON.parse(message.toString());
+                
+                // Sync สถานะไฟ 5 จุด
+                data.lights.forEach((isOn, idx) => {
+                    const id = `light${idx + 1}`;
+                    document.getElementById(`chk-${id}`).checked = isOn;
+                    updateUI(id, isOn);
+                });
+
+                // Sync สถานะแอร์
+                acState = data.ac.state;
+                acTemp = data.ac.temp;
+                document.getElementById('chk-ac').checked = acState;
+                document.getElementById('ac-temp').innerText = acTemp;
+                updateACUI(acState);
+            }
+        });
+
+        function sendControl(device, val) {
+            const numVal = typeof val === 'boolean' ? (val ? 1 : 0) : val;
+            client.publish(TOPIC_CONTROL, `${device}:${numVal}`);
+        }
+
+        function changeTemp(delta) {
+            if(!acState) return;
+            acTemp = Math.min(Math.max(18, acTemp + delta), 30);
+            document.getElementById('ac-temp').innerText = acTemp;
+            sendControl('ac_temp', acTemp);
+        }
+
+        function updateUI(id, isOn) {
+            const card = document.getElementById(`card-${id}`);
+            const status = document.getElementById(`status-${id}`);
+            if(isOn) { card.classList.add('active'); status.innerText = 'เปิดใช้งาน'; }
+            else { card.classList.remove('active'); status.innerText = 'ปิดใช้งาน'; }
+        }
+
+        function updateACUI(isOn) {
+            const card = document.getElementById('ac-card');
+            const status = document.getElementById('ac-status');
+            if(isOn) { card.classList.add('active'); status.innerText = 'สถานะ: กำลังทำงาน (Cool Mode)'; }
+            else { card.classList.remove('active'); status.innerText = 'สถานะ: ปิดใช้งาน'; }
+        }
+    </script>
+</body>
+</html>
