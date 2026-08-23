@@ -72,9 +72,18 @@
         @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } }
         @keyframes pulse-yellow { 0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); } }
 
+        /* Alarm Banner */
+        .alarm-banner {
+            background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;
+            padding: 0.8rem 1.2rem; border-radius: 16px; margin-bottom: 1.5rem;
+            font-size: 0.9rem; font-weight: 600; display: none; align-items: center; gap: 10px;
+            animation: pulse-yellow 1s infinite;
+        }
+        .alarm-banner.show { display: flex; }
+
         .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Lighting Grid Optimized for Mobile (2 columns on mobile, auto-fit on desktop) */
+        /* Lighting Grid Optimized for Mobile */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
         @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; } }
 
@@ -141,20 +150,23 @@
         .ac-card.active .fan-blade { animation: fan-spin 0.4s linear infinite; }
         .ac-card.active .card-status { color: #059669; font-weight: 700; }
 
-        /* AC Controls Container Mobile Stack */
+        /* AC Controls Container */
         .ac-controls { 
             display: flex; align-items: center; justify-content: space-between; gap: 1rem; 
             background: #f8fafc; padding: 1rem; border-radius: 20px; border: 1px solid #f1f5f9; width: 100%;
+            flex-wrap: wrap;
         }
         @media (min-width: 768px) {
-            .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; gap: 2rem; }
+            .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; gap: 1.5rem; flex-wrap: nowrap; }
         }
-        .ac-card.active .ac-controls { background: #ffffff; border-color: #d1fae5; }
 
         .real-temp-box { display: flex; flex-direction: column; align-items: center; }
-        .real-temp-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .real-temp-value { font-size: 1.8rem; font-weight: 800; color: #f59e0b; line-height: 1; }
-        .real-temp-value span { font-size: 0.9rem; color: #94a3b8; }
+        .real-temp-label { font-size: 0.70rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .real-temp-value { font-size: 1.5rem; font-weight: 800; color: #f59e0b; line-height: 1; }
+        .real-temp-value span { font-size: 0.8rem; color: #94a3b8; }
+        
+        .real-hum-value { font-size: 1.5rem; font-weight: 800; color: #0ea5e9; line-height: 1; }
+        .real-hum-value span { font-size: 0.8rem; color: #94a3b8; }
 
         .target-temp-box { display: flex; flex-direction: column; align-items: center; }
         .target-temp-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
@@ -185,6 +197,12 @@
                 </div>
                 <div style="font-size: 0.75rem; color: #64748b; margin-right: 5px; font-weight: 500;" id="last-seen">กำลังเชื่อมต่อ...</div>
             </div>
+        </div>
+
+        <!-- กล่องแจ้งเตือน Alarm -->
+        <div class="alarm-banner" id="alarm-box">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+            <span id="alarm-text">แจ้งเตือนระบบ: ปกติ</span>
         </div>
 
         <div class="section-title">
@@ -253,6 +271,11 @@
                     <div class="real-temp-value" id="room-temp">--.-<span>°C</span></div>
                 </div>
 
+                <div class="real-temp-box">
+                    <div class="real-temp-label">ความชื้น</div>
+                    <div class="real-hum-value" id="room-hum">--<span>%</span></div>
+                </div>
+
                 <div class="target-temp-box">
                     <div class="target-temp-label">ตั้งเป้าหมาย</div>
                     <div class="temp-group">
@@ -302,10 +325,40 @@
                 if(data.ac.realTemp > 0) {
                     document.getElementById('room-temp').innerHTML = `${data.ac.realTemp}<span>°C</span>`;
                 }
+                if(data.ac.realHumidity > 0) {
+                    document.getElementById('room-hum').innerHTML = `${data.ac.realHumidity}<span>%</span>`;
+                }
 
                 updateACUI(acState);
+
+                // ระบบเช็คเงื่อนไข Alarm บนหน้าจอ
+                checkAlarms(data.ac.realHumidity, data.ac.realTemp, acTargetTemp, acState);
             }
         });
+
+        function checkAlarms(humidity, realTemp, targetTemp, state) {
+            let alarms = [];
+            
+            // เงื่อนไข 1: ความชื้นเกิน 80%
+            if (humidity > 80) {
+                alarms.push(`⚠️ ความชื้นสูงเกินไป (${humidity}%)`);
+            }
+
+            // เงื่อนไข 2: แอร์เปิดอยู่ แต่อุณหภูมิห้องไม่เข้าใกล้ที่ Set (ต่างกันเกิน 3 องศา)
+            if (state && realTemp > 0 && Math.abs(realTemp - targetTemp) > 3) {
+                alarms.push(`⚠️ แอร์ทำงานแต่อุณหภูมิห้อง (${realTemp}°C) ยังไม่เข้าใกล้ค่าที่ตั้งไว้ (${targetTemp}°C)`);
+            }
+
+            const alarmBox = document.getElementById('alarm-box');
+            const alarmText = document.getElementById('alarm-text');
+
+            if (alarms.length > 0) {
+                alarmText.innerText = alarms.join(" | ");
+                alarmBox.classList.add('show');
+            } else {
+                alarmBox.classList.remove('show');
+            }
+        }
 
         setInterval(() => {
             const now = Date.now();
@@ -347,15 +400,4 @@
             const card = document.getElementById(`card-${id}`);
             const status = document.getElementById(`status-${id}`);
             if(isOn) { card.classList.add('active'); status.innerText = 'เปิด'; } 
-            else { card.classList.remove('active'); status.innerText = 'ปิด'; }
-        }
-
-        function updateACUI(isOn) {
-            const card = document.getElementById('ac-card');
-            const status = document.getElementById('ac-status');
-            if(isOn) { card.classList.add('active'); status.innerText = 'กำลังทำงาน'; } 
-            else { card.classList.remove('active'); status.innerText = 'สแตนด์บาย'; }
-        }
-    </script>
-</body>
-</html>
+            else { card.classList.remove('acti
