@@ -262,7 +262,8 @@
     </div>
 
     <script>
-        const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
+        // ใช้ Broker ของ EMQX ผ่าน WSS (พอร์ต 8084) ซึ่งรองรับเว็บเบราว์เซอร์ HTTPS ได้เสถียรที่สุด
+        const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
         const TOPIC_CONTROL = 'santayanon/home/control';
         const TOPIC_STATUS = 'santayanon/home/status';
 
@@ -273,7 +274,7 @@
         let espOfflineTimer = null;
 
         client.on('connect', () => {
-            console.log('Connected to MQTT Broker via WSS');
+            console.log('Connected to EMQX Broker via WSS');
             client.subscribe(TOPIC_STATUS);
         });
 
@@ -298,18 +299,18 @@
 
         client.on('message', (topic, payload) => {
             if (topic === TOPIC_STATUS) {
-                // เมื่อได้รับข้อมูลจาก ESP32 แสดงว่าบอร์ดออนไลน์อยู่ รีเซ็ตตัวนับเวลาออฟไลน์ทันที (7 วินาที)
+                // เมื่อได้รับข้อมูลจาก ESP32 แสดงว่าบอร์ดออนไลน์ รีเซ็ตตัวนับออฟไลน์ (7 วินาที)
                 clearTimeout(espOfflineTimer);
                 
                 const badge = document.getElementById('connectionStatus');
                 badge.className = 'live-badge online';
-                document.getElementById('statusIcon').outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
+                document.getElementById('statusIcon'].outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
                 document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
 
-                // ตั้งเวลาตัดการเชื่อมต่อ ถ้าเกิน 7 วินาทีไม่มีข้อมูลส่งมา แปลว่า ESP32 ถูกถอดปลั๊กหรือออฟไลน์
+                // หากเกิน 7 วินาทีไม่มีข้อมูลส่งมา แปลว่า ESP32 ออฟไลน์หรือถูกถอดปลั๊ก
                 espOfflineTimer = setTimeout(() => {
                     badge.className = 'live-badge waiting';
-                    document.getElementById('statusIcon').outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
+                    document.getElementById('statusIcon'].outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
                     document.getElementById('statusText').innerText = 'รอสัญญาณ (ESP32 ออฟไลน์)';
                     document.getElementById('liveLogContent').innerHTML = `
                         <div class="log-title" style="color: #ef4444;"><i class="fa-solid fa-plug-circle-xmark"></i> บอร์ด ESP32 ออฟไลน์ / ถูกถอดปลั๊ก</div>
@@ -367,5 +368,4 @@
                     logBox.innerHTML = `
                         <div class="log-title"><i class="fa-solid fa-check-circle" style="color: #22c55e;"></i> บอร์ด ESP32 ทำงานปกติ (เรียลไทม์)</div>
                         <div>- ไฟห้องนั่งเล่น (จุด 1): ${l1}</div>
-                        <div>- ไฟห้องนอนใหญ่ (จุด 2): ${l2}</div>
-       
+            
