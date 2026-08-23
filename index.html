@@ -72,25 +72,16 @@
         @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } }
         @keyframes pulse-yellow { 0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); } }
 
-        /* Alarm Banner */
-        .alarm-banner {
-            background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;
-            padding: 0.8rem 1.2rem; border-radius: 16px; margin-bottom: 1.5rem;
-            font-size: 0.9rem; font-weight: 600; display: none; align-items: center; gap: 10px;
-            animation: pulse-yellow 1s infinite;
-        }
-        .alarm-banner.show { display: flex; }
-
         .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Lighting Grid Optimized for Mobile */
+        /* Lighting Grid */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
         @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; } }
 
         .card {
             background: rgba(255, 255, 255, 0.9); border: 1px solid #f1f5f9;
             border-radius: 24px; padding: 1.2rem; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.03); transform: translateZ(0);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.03);
         }
         .card.active { background: #ffffff; border-color: #0ea5e9; box-shadow: 0 15px 30px rgba(2, 132, 199, 0.12), inset 0 0 0 2px #0ea5e9; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -98,17 +89,17 @@
         .icon-box {
             width: 48px; height: 48px; border-radius: 16px; background: #f8fafc;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; color: #94a3b8; border: 1px solid #e2e8f0; transition: all 0.4s;
+            font-size: 1.3rem; color: #94a3b8; border: 1px solid #e2e8f0;
         }
         .card.active .icon-box { background: #0ea5e9; color: #ffffff; border-color: #0ea5e9; box-shadow: 0 8px 16px rgba(2, 132, 199, 0.3); }
 
-        /* Switches Mobile Size */
+        /* Switches */
         .advanced-switch {
             appearance: none; -webkit-appearance: none;
             width: 56px; height: 30px; background: #cbd5e1;
             border-radius: 50px; position: relative; cursor: pointer; outline: none;
             box-shadow: inset 0 2px 5px rgba(15,23,42,0.1);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translateZ(0);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .advanced-switch::after {
             content: ''; position: absolute; top: 2px; left: 2px;
@@ -117,287 +108,251 @@
         }
         .advanced-switch:checked { background: #0ea5e9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(14, 165, 233, 0.25); }
         .advanced-switch:checked::after { left: calc(100% - 28px); }
-
-        .ac-switch:checked { background: #10b981; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(16, 185, 129, 0.25); }
+        .ac-switch:checked { background: #10b981 !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 12px rgba(16, 185, 129, 0.25) !important; }
 
         .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; color: #1e293b; }
         .card-status { font-size: 0.85rem; color: #64748b; font-weight: 500; }
         .card.active .card-status { color: #0284c7; font-weight: 600; }
 
-        /* AC Module Mobile Optimized */
+        /* AC Module */
         .ac-card {
             background: #ffffff; border: 1px solid #e2e8f0;
             border-radius: 28px; padding: 1.5rem;
             display: flex; flex-direction: column; gap: 1.5rem;
             box-shadow: 0 15px 30px rgba(15, 23, 42, 0.03);
-            transition: all 0.4s ease; transform: translateZ(0);
         }
-        @media (min-width: 768px) {
-            .ac-card { flex-direction: row; justify-content: space-between; padding: 2.5rem; }
-        }
+        @media (min-width: 768px) { .ac-card { flex-direction: row; justify-content: space-between; padding: 2.5rem; } }
         .ac-card.active { background: #f0fdf4; border-color: #10b981; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1), inset 0 0 0 2px #10b981; }
 
         .ac-info { display: flex; align-items: center; gap: 1.2rem; }
         .ac-icon {
             width: 60px; height: 60px; border-radius: 20px;
             background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; border: 1px solid #e2e8f0; transition: all 0.4s;
+            font-size: 1.8rem; border: 1px solid #e2e8f0;
         }
         .ac-card.active .ac-icon { background: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
-
-        @keyframes fan-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .fan-blade { will-change: transform; transform: translateZ(0); }
-        .ac-card.active .fan-blade { animation: fan-spin 0.4s linear infinite; }
         .ac-card.active .card-status { color: #059669; font-weight: 700; }
 
-        /* AC Controls Container */
         .ac-controls { 
             display: flex; align-items: center; justify-content: space-between; gap: 1rem; 
             background: #f8fafc; padding: 1rem; border-radius: 20px; border: 1px solid #f1f5f9; width: 100%;
             flex-wrap: wrap;
         }
-        @media (min-width: 768px) {
-            .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; gap: 1.5rem; flex-wrap: nowrap; }
-        }
+        @media (min-width: 768px) { .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; gap: 1.5rem; flex-wrap: nowrap; } }
 
-        .real-temp-box { display: flex; flex-direction: column; align-items: center; }
-        .real-temp-label { font-size: 0.70rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .real-temp-box, .target-temp-box { display: flex; flex-direction: column; align-items: center; }
+        .real-temp-label, .target-temp-label { font-size: 0.70rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
         .real-temp-value { font-size: 1.5rem; font-weight: 800; color: #f59e0b; line-height: 1; }
-        .real-temp-value span { font-size: 0.8rem; color: #94a3b8; }
-        
         .real-hum-value { font-size: 1.5rem; font-weight: 800; color: #0ea5e9; line-height: 1; }
-        .real-hum-value span { font-size: 0.8rem; color: #94a3b8; }
-
-        .target-temp-box { display: flex; flex-direction: column; align-items: center; }
-        .target-temp-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
-        .temp-group { display: flex; align-items: center; gap: 0.8rem; }
+        .temp-group { display: flex; align-items: center; gap: 0.8rem; margin-top: 4px; }
         
         .temp-btn {
             width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e8f0;
             background: #ffffff; color: #475569; font-size: 1rem; cursor: pointer; 
-            transition: all 0.2s; box-shadow: 0 2px 5px rgba(15,23,42,0.05);
+            box-shadow: 0 2px 5px rgba(15,23,42,0.05);
         }
-        .temp-btn:active { transform: scale(0.9); }
-        .temp-display { font-size: 2.2rem; font-weight: 800; min-width: 65px; text-align: center; line-height: 1; color: #0f172a; }
-        .temp-display span.unit { font-size: 1rem; font-weight: 600; vertical-align: top; color: #94a3b8;}
-
-        .ac-switch-container { display: flex; align-items: center; }
+        .temp-display { font-size: 1.5rem; font-weight: 800; color: #1e293b; min-width: 40px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="dashboard">
         <div class="header">
-            <h1><i class="fa-solid fa-house-chimney-crack" style="color: #0ea5e9;"></i> Home Santayanon</h1>
-            
+            <h1><i class="fa-solid fa-house-chimney"></i> Home Santayanon</h1>
             <div class="status-container">
-                <div class="live-badge waiting" id="conn-badge">
-                    <div class="indicator-dot"></div>
-                    <span id="conn-text">รอสัญญาณ...</span>
+                <div id="connectionStatus" class="live-badge waiting">
+                    <span class="indicator-dot"></span>
+                    <span id="statusText">กำลังเชื่อมต่อ...</span>
                 </div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-right: 5px; font-weight: 500;" id="last-seen">กำลังเชื่อมต่อ...</div>
             </div>
         </div>
 
-        <!-- กล่องแจ้งเตือน Alarm -->
-        <div class="alarm-banner" id="alarm-box">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
-            <span id="alarm-text">แจ้งเตือนระบบ: ปกติ</span>
-        </div>
-
-        <div class="section-title">
-            <i class="fa-solid fa-lightbulb" style="color: #0ea5e9;"></i> ระบบไฟ (5 จุด)
-        </div>
+        <div class="section-title"><i class="fa-solid fa-lightbulb"></i> ระบบไฟ (5 จุด)</div>
         <div class="grid">
             <div class="card" id="card-light1">
                 <div class="card-header">
                     <div class="icon-box"><i class="fa-solid fa-couch"></i></div>
-                    <input type="checkbox" class="advanced-switch" id="chk-light1" onchange="sendControl('light1', this.checked)">
+                    <input type="checkbox" id="light1" class="advanced-switch" onchange="controlLight(1)">
                 </div>
                 <div class="card-title">ห้องนั่งเล่น</div>
                 <div class="card-status" id="status-light1">ปิด</div>
             </div>
+
             <div class="card" id="card-light2">
                 <div class="card-header">
                     <div class="icon-box"><i class="fa-solid fa-bed"></i></div>
-                    <input type="checkbox" class="advanced-switch" id="chk-light2" onchange="sendControl('light2', this.checked)">
+                    <input type="checkbox" id="light2" class="advanced-switch" onchange="controlLight(2)">
                 </div>
                 <div class="card-title">ห้องนอนใหญ่</div>
                 <div class="card-status" id="status-light2">ปิด</div>
             </div>
+
             <div class="card" id="card-light3">
                 <div class="card-header">
                     <div class="icon-box"><i class="fa-solid fa-utensils"></i></div>
-                    <input type="checkbox" class="advanced-switch" id="chk-light3" onchange="sendControl('light3', this.checked)">
+                    <input type="checkbox" id="light3" class="advanced-switch" onchange="controlLight(3)">
                 </div>
                 <div class="card-title">ห้องครัว</div>
                 <div class="card-status" id="status-light3">ปิด</div>
             </div>
+
             <div class="card" id="card-light4">
                 <div class="card-header">
                     <div class="icon-box"><i class="fa-solid fa-bath"></i></div>
-                    <input type="checkbox" class="advanced-switch" id="chk-light4" onchange="sendControl('light4', this.checked)">
+                    <input type="checkbox" id="light4" class="advanced-switch" onchange="controlLight(4)">
                 </div>
                 <div class="card-title">ห้องน้ำ</div>
                 <div class="card-status" id="status-light4">ปิด</div>
             </div>
-            <div class="card" id="card-light5" style="grid-column: span 2;">
+
+            <div class="card" id="card-light5">
                 <div class="card-header">
                     <div class="icon-box"><i class="fa-solid fa-tree"></i></div>
-                    <input type="checkbox" class="advanced-switch" id="chk-light5" onchange="sendControl('light5', this.checked)">
+                    <input type="checkbox" id="light5" class="advanced-switch" onchange="controlLight(5)">
                 </div>
                 <div class="card-title">ระเบียงหน้าบ้าน</div>
                 <div class="card-status" id="status-light5">ปิดใช้งาน</div>
             </div>
         </div>
 
-        <div class="section-title">
-            <i class="fa-solid fa-snowflake" style="color: #10b981;"></i> ระบบปรับอากาศ
-        </div>
-        <div class="ac-card" id="ac-card">
+        <div class="section-title"><i class="fa-solid fa-snowflake"></i> ระบบปรับอากาศ</div>
+        <div class="ac-card" id="acCard">
             <div class="ac-info">
-                <div class="ac-icon">
-                    <i class="fa-solid fa-fan fan-blade"></i>
-                </div>
+                <div class="ac-icon"><i class="fa-solid fa-snowflake fan-blade"></i></div>
                 <div>
-                    <div class="card-title" style="font-size: 1.2rem;">แอร์ Inverter</div>
-                    <div class="card-status" id="ac-status">สแตนด์บาย</div>
+                    <div class="card-title" style="font-size: 1.2rem;">เครื่องปรับอากาศหลัก</div>
+                    <div class="card-status" id="acStatusText">ปิดการทำงาน</div>
                 </div>
             </div>
 
             <div class="ac-controls">
                 <div class="real-temp-box">
-                    <div class="real-temp-label">ห้องจริง</div>
-                    <div class="real-temp-value" id="room-temp">--.-<span>°C</span></div>
+                    <span class="real-temp-label">อุณหภูมิห้อง</span>
+                    <span class="real-temp-value" id="realTemp">--°C</span>
                 </div>
-
                 <div class="real-temp-box">
-                    <div class="real-temp-label">ความชื้น</div>
-                    <div class="real-hum-value" id="room-hum">--<span>%</span></div>
+                    <span class="real-temp-label">ความชื้น</span>
+                    <span class="real-hum-value" id="realHum">--%</span>
                 </div>
-
                 <div class="target-temp-box">
-                    <div class="target-temp-label">ตั้งเป้าหมาย</div>
+                    <span class="target-temp-label">อุณหภูมิเป้าหมาย</span>
                     <div class="temp-group">
-                        <button class="temp-btn" onclick="changeTemp(-1)"><i class="fa-solid fa-minus"></i></button>
-                        <div class="temp-display" id="target-temp">25<span class="unit">°C</span></div>
-                        <button class="temp-btn" onclick="changeTemp(1)"><i class="fa-solid fa-plus"></i></button>
+                        <button class="temp-btn" onclick="adjustTemp(-1)"><i class="fa-solid fa-minus"></i></button>
+                        <span class="temp-display" id="targetTemp">25</span>
+                        <button class="temp-btn" onclick="adjustTemp(1)"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
-                
-                <div class="ac-switch-container">
-                    <input type="checkbox" class="advanced-switch ac-switch" id="chk-ac" onchange="sendControl('ac', this.checked)">
+                <div>
+                    <input type="checkbox" id="acToggle" class="advanced-switch ac-switch" onchange="controlAC()">
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const TOPIC_CONTROL = "santayanon/home/control";
-        const TOPIC_STATUS = "santayanon/home/status";
+        // เชื่อมต่อผ่าน WebSocket ปลอดภัย (wss://) สำหรับหน้าเว็บ HTTPS (GitHub Pages)
+        const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
+        const TOPIC_CONTROL = 'santayanon/home/control';
+        const TOPIC_STATUS = 'santayanon/home/status';
 
-        let acTargetTemp = 25;
-        let acState = false;
-        let lastHeartbeat = 0;
+        const client = mqtt.connect(brokerUrl, {
+            clientId: 'web_client_' + Math.random().toString(16).substr(2, 8)
+        });
 
-        const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+        client.on('connect', () => {
+            console.log('Connected to MQTT Broker via WSS');
+            const badge = document.getElementById('connectionStatus');
+            badge.className = 'live-badge online';
+            document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
+            client.subscribe(TOPIC_STATUS);
+        });
 
-        client.on('connect', () => { client.subscribe(TOPIC_STATUS); });
+        client.on('offline', () => {
+            setOfflineState();
+        });
 
-        client.on('message', (topic, message) => {
+        client.on('error', (err) => {
+            console.error('MQTT Error: ', err);
+            setOfflineState();
+        });
+
+        function setOfflineState() {
+            const badge = document.getElementById('connectionStatus');
+            badge.className = 'live-badge waiting';
+            document.getElementById('statusText').innerText = 'รอสัญญาณ...';
+        }
+
+        client.on('message', (topic, payload) => {
             if (topic === TOPIC_STATUS) {
-                lastHeartbeat = Date.now();
-                setEspOnline();
+                try {
+                    const data = JSON.parse(payload.toString());
+                    
+                    // อัปเดตสถานะไฟ 5 จุด
+                    if (data.lights) {
+                        for (let i = 0; i < 5; i++) {
+                            const state = data.lights[i] ? true : false;
+                            document.getElementById('light' + (i + 1)).checked = state;
+                            const card = document.getElementById('card-light' + (i + 1));
+                            const statusText = document.getElementById('status-light' + (i + 1));
+                            if (state) {
+                                card.classList.add('active');
+                                statusText.innerText = 'เปิด';
+                            } else {
+                                card.classList.remove('active');
+                                statusText.innerText = 'ปิด';
+                            }
+                        }
+                    }
 
-                const data = JSON.parse(message.toString());
-                
-                data.lights.forEach((isOn, idx) => {
-                    const id = `light${idx + 1}`;
-                    document.getElementById(`chk-${id}`).checked = isOn;
-                    updateUI(id, isOn);
-                });
+                    // อัปเดตสถานะแอร์
+                    if (data.ac) {
+                        const acState = data.ac.state ? true : false;
+                        document.getElementById('acToggle').checked = acState;
+                        const acCard = document.getElementById('acCard');
+                        const acStatusText = document.getElementById('acStatusText');
+                        if (acState) {
+                            acCard.classList.add('active');
+                            acStatusText.innerText = 'เปิดทำงาน';
+                        } else {
+                            acCard.classList.remove('active');
+                            acStatusText.innerText = 'ปิดการทำงาน';
+                        }
 
-                acState = data.ac.state;
-                acTargetTemp = data.ac.targetTemp;
-                document.getElementById('chk-ac').checked = acState;
-                document.getElementById('target-temp').innerHTML = `${acTargetTemp}<span class="unit">°C</span>`;
-                
-                if(data.ac.realTemp > 0) {
-                    document.getElementById('room-temp').innerHTML = `${data.ac.realTemp}<span>°C</span>`;
+                        if (data.ac.targetTemp !== undefined) {
+                            document.getElementById('targetTemp').innerText = data.ac.targetTemp;
+                        }
+                        if (data.ac.realTemp !== undefined) {
+                            document.getElementById('realTemp').innerText = data.ac.realTemp.toFixed(1) + '°C';
+                        }
+                        if (data.ac.realHumidity !== undefined) {
+                            document.getElementById('realHum').innerText = data.ac.realHumidity.toFixed(1) + '%';
+                        }
+                    }
+                } catch (e) {
+                    console.error('JSON Parse error:', e);
                 }
-                if(data.ac.realHumidity > 0) {
-                    document.getElementById('room-hum').innerHTML = `${data.ac.realHumidity}<span>%</span>`;
-                }
-
-                updateACUI(acState);
-
-                // ระบบเช็คเงื่อนไข Alarm บนหน้าจอ
-                checkAlarms(data.ac.realHumidity, data.ac.realTemp, acTargetTemp, acState);
             }
         });
 
-        function checkAlarms(humidity, realTemp, targetTemp, state) {
-            let alarms = [];
-            
-            // เงื่อนไข 1: ความชื้นเกิน 80%
-            if (humidity > 80) {
-                alarms.push(`⚠️ ความชื้นสูงเกินไป (${humidity}%)`);
-            }
-
-            // เงื่อนไข 2: แอร์เปิดอยู่ แต่อุณหภูมิห้องไม่เข้าใกล้ที่ Set (ต่างกันเกิน 3 องศา)
-            if (state && realTemp > 0 && Math.abs(realTemp - targetTemp) > 3) {
-                alarms.push(`⚠️ แอร์ทำงานแต่อุณหภูมิห้อง (${realTemp}°C) ยังไม่เข้าใกล้ค่าที่ตั้งไว้ (${targetTemp}°C)`);
-            }
-
-            const alarmBox = document.getElementById('alarm-box');
-            const alarmText = document.getElementById('alarm-text');
-
-            if (alarms.length > 0) {
-                alarmText.innerText = alarms.join(" | ");
-                alarmBox.classList.add('show');
-            } else {
-                alarmBox.classList.remove('show');
-            }
+        function controlLight(index) {
+            const state = document.getElementById('light' + index).checked ? 1 : 0;
+            client.publish(TOPIC_CONTROL, `light${index}:${state}`);
         }
 
-        setInterval(() => {
-            const now = Date.now();
-            const badge = document.getElementById('conn-badge');
-            const text = document.getElementById('conn-text');
-            const timeText = document.getElementById('last-seen');
-            
-            if (now - lastHeartbeat > 8000) {
-                badge.className = 'live-badge';
-                text.innerText = 'ออฟไลน์';
-                timeText.innerText = 'ขาดการเชื่อมต่อ';
-            } else {
-                timeText.innerText = 'ออนไลน์ปกติ';
-            }
-        }, 2000);
-
-        function setEspOnline() {
-            const badge = document.getElementById('conn-badge');
-            const text = document.getElementById('conn-text');
-            if (!badge.classList.contains('online')) {
-                badge.className = 'live-badge online';
-                text.innerText = 'เชื่อมต่อแล้ว';
-            }
+        function controlAC() {
+            const state = document.getElementById('acToggle').checked ? 1 : 0;
+            client.publish(TOPIC_CONTROL, `ac:${state}`);
         }
 
-        function sendControl(device, val) {
-            const numVal = typeof val === 'boolean' ? (val ? 1 : 0) : val;
-            client.publish(TOPIC_CONTROL, `${device}:${numVal}`);
+        let currentTemp = 25;
+        function adjustTemp(change) {
+            currentTemp += change;
+            if (currentTemp < 16) currentTemp = 16;
+            if (currentTemp > 30) currentTemp = 30;
+            document.getElementById('targetTemp').innerText = currentTemp;
+            client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
         }
+    </script>
+</body>
+</html>
 
-        function changeTemp(delta) {
-            if(!acState) return;
-            acTargetTemp = Math.min(Math.max(18, acTargetTemp + delta), 30);
-            document.getElementById('target-temp').innerHTML = `${acTargetTemp}<span class="unit">°C</span>`;
-            sendControl('ac_temp', acTargetTemp);
-        }
-
-        function updateUI(id, isOn) {
-            const card = document.getElementById(`card-${id}`);
-            const status = document.getElementById(`status-${id}`);
-            if(isOn) { card.classList.add('active'); status.innerText = 'เปิด'; } 
-            else { card.classList.remove('acti
