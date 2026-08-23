@@ -114,6 +114,7 @@
             border-radius: 28px; padding: 1.5rem;
             display: flex; flex-direction: column; gap: 1.5rem;
             box-shadow: 0 15px 30px rgba(15, 23, 42, 0.03);
+            margin-bottom: 2rem;
         }
         @media (min-width: 768px) { .ac-card { flex-direction: row; justify-content: space-between; padding: 2.5rem; } }
         .ac-card.active { background: #f0fdf4; border-color: #10b981; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1), inset 0 0 0 2px #10b981; }
@@ -150,6 +151,14 @@
             box-shadow: 0 2px 5px rgba(15,23,42,0.05);
         }
         .temp-display { font-size: 1.5rem; font-weight: 800; color: #1e293b; min-width: 40px; text-align: center; }
+
+        .system-log-box {
+            background: #0f172a; color: #38bdf8; border-radius: 24px; padding: 1.2rem 1.5rem;
+            font-family: monospace; font-size: 0.85rem; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+            border: 1px solid #334155;
+        }
+        .system-log-box div { margin-bottom: 4px; }
+        .log-title { color: #facc15; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-family: 'Kanit', sans-serif; }
     </style>
 </head>
 <body>
@@ -245,6 +254,11 @@
                 </div>
             </div>
         </div>
+
+        <div class="section-title"><i class="fa-solid fa-terminal"></i> สถานะการทำงานจริงจากบอร์ด (Live Log)</div>
+        <div class="system-log-box" id="liveLogContent">
+            <div class="log-title"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังรอรับข้อมูลสถานะจากบอร์ด ESP32...</div>
+        </div>
     </div>
 
     <script>
@@ -256,36 +270,66 @@
             clientId: 'web_client_' + Math.random().toString(16).substr(2, 8)
         });
 
+        let espOfflineTimer = null;
+
         client.on('connect', () => {
             console.log('Connected to MQTT Broker via WSS');
-            const badge = document.getElementById('connectionStatus');
-            badge.className = 'live-badge online';
-            document.getElementById('statusIcon').outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
-            document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
             client.subscribe(TOPIC_STATUS);
         });
 
         client.on('offline', () => {
-            setOfflineState();
+            setOfflineState('ขาดการเชื่อมต่ออินเทอร์เน็ต');
         });
 
         client.on('error', (err) => {
             console.error('MQTT Error: ', err);
-            setOfflineState();
+            setOfflineState('เกิดข้อผิดพลาดในการเชื่อมต่อ');
         });
 
-        function setOfflineState() {
+        function setOfflineState(reason) {
             const badge = document.getElementById('connectionStatus');
             badge.className = 'live-badge waiting';
             document.getElementById('statusIcon').outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
             document.getElementById('statusText').innerText = 'รอสัญญาณ...';
+            document.getElementById('liveLogContent').innerHTML = `
+                <div class="log-title" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> ${reason}</div>
+            `;
         }
 
         client.on('message', (topic, payload) => {
             if (topic === TOPIC_STATUS) {
+                // เมื่อได้รับข้อมูลจาก ESP32 แสดงว่าบอร์ดออนไลน์อยู่ รีเซ็ตตัวนับเวลาออฟไลน์ทันที (7 วินาที)
+                clearTimeout(espOfflineTimer);
+                
+                const badge = document.getElementById('connectionStatus');
+                badge.className = 'live-badge online';
+                document.getElementById('statusIcon').outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
+                document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
+
+                // ตั้งเวลาตัดการเชื่อมต่อ ถ้าเกิน 7 วินาทีไม่มีข้อมูลส่งมา แปลว่า ESP32 ถูกถอดปลั๊กหรือออฟไลน์
+                espOfflineTimer = setTimeout(() => {
+                    badge.className = 'live-badge waiting';
+                    document.getElementById('statusIcon').outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
+                    document.getElementById('statusText').innerText = 'รอสัญญาณ (ESP32 ออฟไลน์)';
+                    document.getElementById('liveLogContent').innerHTML = `
+                        <div class="log-title" style="color: #ef4444;"><i class="fa-solid fa-plug-circle-xmark"></i> บอร์ด ESP32 ออฟไลน์ / ถูกถอดปลั๊ก</div>
+                    `;
+                }, 7000);
+
                 try {
                     const data = JSON.parse(payload.toString());
                     
+                    let l1 = data.lights && data.lights[0] ? '🟢 เปิด' : '🔴 ปิด';
+                    let l2 = data.lights && data.lights[1] ? '🟢 เปิด' : '🔴 ปิด';
+                    let l3 = data.lights && data.lights[2] ? '🟢 เปิด' : '🔴 ปิด';
+                    let l4 = data.lights && data.lights[3] ? '🟢 เปิด' : '🔴 ปิด';
+                    let l5 = data.lights && data.lights[4] ? '🟢 เปิด' : '🔴 ปิด';
+                    
+                    let acSt = data.ac && data.ac.state ? '🟢 เปิดทำงาน' : '🔴 ปิดการทำงาน';
+                    let tTemp = data.ac && data.ac.targetTemp !== undefined ? data.ac.targetTemp : 25;
+                    let rTemp = data.ac && data.ac.realTemp !== undefined ? data.ac.realTemp.toFixed(1) : '--';
+                    let rHum = data.ac && data.ac.realHumidity !== undefined ? data.ac.realHumidity.toFixed(1) : '--';
+
                     if (data.lights) {
                         for (let i = 0; i < 5; i++) {
                             const state = data.lights[i] ? true : false;
@@ -314,42 +358,14 @@
                             acCard.classList.remove('active');
                             acStatusText.innerText = 'ปิดการทำงาน';
                         }
-
-                        if (data.ac.targetTemp !== undefined) {
-                            document.getElementById('targetTemp').innerText = data.ac.targetTemp;
-                        }
-                        if (data.ac.realTemp !== undefined) {
-                            document.getElementById('realTemp').innerText = data.ac.realTemp.toFixed(1) + '°C';
-                        }
-                        if (data.ac.realHumidity !== undefined) {
-                            document.getElementById('realHum').innerText = data.ac.realHumidity.toFixed(1) + '%';
-                        }
+                        document.getElementById('targetTemp').innerText = tTemp;
+                        document.getElementById('realTemp').innerText = rTemp + '°C';
+                        document.getElementById('realHum').innerText = rHum + '%';
                     }
-                } catch (e) {
-                    console.error('JSON Parse error:', e);
-                }
-            }
-        });
 
-        function controlLight(index) {
-            const state = document.getElementById('light' + index).checked ? 1 : 0;
-            client.publish(TOPIC_CONTROL, `light${index}:${state}`);
-        }
-
-        function controlAC() {
-            const state = document.getElementById('acToggle').checked ? 1 : 0;
-            client.publish(TOPIC_CONTROL, `ac:${state}`);
-        }
-
-        let currentTemp = 25;
-        function adjustTemp(change) {
-            currentTemp += change;
-            if (currentTemp < 16) currentTemp = 16;
-            if (currentTemp > 30) currentTemp = 30;
-            document.getElementById('targetTemp').innerText = currentTemp;
-            client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
-        }
-    </script>
-</body>
-</html>
-
+                    const logBox = document.getElementById('liveLogContent');
+                    logBox.innerHTML = `
+                        <div class="log-title"><i class="fa-solid fa-check-circle" style="color: #22c55e;"></i> บอร์ด ESP32 ทำงานปกติ (เรียลไทม์)</div>
+                        <div>- ไฟห้องนั่งเล่น (จุด 1): ${l1}</div>
+                        <div>- ไฟห้องนอนใหญ่ (จุด 2): ${l2}</div>
+       
