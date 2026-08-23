@@ -147,12 +147,12 @@
         }
         .temp-display { font-size: 1.5rem; font-weight: 800; color: #1e293b; min-width: 40px; text-align: center; }
 
-        /* 🖥️ ช่องแสดงสถานะเหมือนหน้าจอคอมพิวเตอร์ (Serial Monitor Screen) - ขยายใหญ่ขึ้นชัดเจน */
+        /* หน้าจอ Serial Monitor จำลองขนาดใหญ่ สีเขียวเรืองแสง */
         .system-log-box {
             background: #000000; color: #00ff00; border-radius: 20px; padding: 1.5rem;
             font-family: 'Courier New', Courier, monospace; font-size: 1.05rem; line-height: 1.6;
-            min-height: 280px; max-height: 450px; overflow-y: auto;
-            border: 3px solid #334155; box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.15);
+            min-height: 300px; max-height: 500px; overflow-y: auto;
+            border: 3px solid #334155; box-shadow: inset 0 0 25px rgba(0, 255, 0, 0.2);
         }
         .system-log-box div { margin-bottom: 6px; }
         .log-header-title { color: #facc15; font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed #334155; padding-bottom: 6px; font-family: 'Kanit', sans-serif; font-size: 1.1rem; }
@@ -252,16 +252,15 @@
             </div>
         </div>
 
-        <!-- หน้าจอจำลอง Serial Monitor ขนาดใหญ่ -->
         <div class="section-title"><i class="fa-solid fa-desktop"></i> หน้าจอแสดงผลสถานะจริงจากบอร์ด (Serial Monitor Simulation)</div>
         <div class="system-log-box" id="liveLogContent">
-            <div style="color: #facc15;">[SYSTEM] กำลังเชื่อมต่อ MQTT Broker และรอรับสัญญาณจากบอร์ด ESP32...</div>
+            <div style="color: #facc15;">[SYSTEM] กำลังเชื่อมต่อ EMQX Broker (พอร์ต 8084)...</div>
         </div>
     </div>
 
     <script>
-        // ใช้ WSS ของ HiveMQ ผ่านพอร์ต 8884 เพื่อให้เชื่อมต่อเว็บปลอดภัย (HTTPS)
-        const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
+        // ใช้ Broker ของ EMQX ผ่านพอร์ต WSS 8084 ซึ่งเสถียรและเชื่อมต่อผ่าน HTTPS ได้ 100% ไม่โดนบล็อก
+        const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
         const TOPIC_CONTROL = 'santayanon/home/control';
         const TOPIC_STATUS = 'santayanon/home/status';
 
@@ -275,7 +274,7 @@
         let espTimeout = null;
 
         client.on('connect', () => {
-            console.log('Connected to MQTT via WSS');
+            console.log('Connected to EMQX Broker via WSS');
             client.subscribe(TOPIC_STATUS);
         });
 
@@ -300,7 +299,6 @@
 
         client.on('message', (topic, payload) => {
             if (topic === TOPIC_STATUS) {
-                // เมื่อได้รับข้อมูล แปลว่าบอร์ดออนไลน์ รีเซ็ตตัวนับออฟไลน์ (7 วินาที)
                 clearTimeout(espTimeout);
                 
                 const badge = document.getElementById('connectionStatus');
@@ -308,7 +306,6 @@
                 document.getElementById('statusIcon').outerHTML = '<span class="indicator-dot" id="statusIcon"></span>';
                 document.getElementById('statusText').innerText = 'เชื่อมต่อแล้ว';
 
-                // หากถอดปลั๊กบอร์ด (ไม่มีข้อมูลส่งมาเกิน 7 วินาที) ตัดเป็นสถานะออฟไลน์ทันที
                 espTimeout = setTimeout(() => {
                     badge.className = 'live-badge waiting';
                     document.getElementById('statusIcon'].outerHTML = '<i id="statusIcon" class="fa-solid fa-spinner fa-spin"></i>';
@@ -332,7 +329,6 @@
                     let rTemp = data.ac && data.ac.realTemp !== undefined ? data.ac.realTemp.toFixed(1) : '--';
                     let rHum = data.ac && data.ac.realHumidity !== undefined ? data.ac.realHumidity.toFixed(1) : '--';
 
-                    // อัปเดตสวิทช์หน้าเว็บ
                     if (data.lights) {
                         for (let i = 0; i < 5; i++) {
                             const state = data.lights[i] ? true : false;
@@ -366,9 +362,46 @@
                         document.getElementById('realHum').innerText = rHum + '%';
                     }
 
-                    // อัปเดตหน้าจอ Serial Monitor จำลองขนาดใหญ่
                     const logBox = document.getElementById('liveLogContent');
                     logBox.innerHTML = `
                         <div class="log-header-title">----------------------------------------</div>
                         <div style="color: #38bdf8;">📥 [STATUS RECEIVED FROM ESP32]</div>
-  
+                        <div>- ไฟห้องนั่งเล่น (จุด 1): ${l1}</div>
+                        <div>- ไฟห้องนอนใหญ่ (จุด 2): ${l2}</div>
+                        <div>- ไฟห้องครัว (จุด 3):     ${l3}</div>
+                        <div>- ไฟห้องน้ำ (จุด 4):     ${l4}</div>
+                        <div>- ไฟระเบียง (จุด 5):     ${l5}</div>
+                        <div>- แอร์หลัก:              ${acSt}</div>
+                        <div>- อุณหภูมิเป้าหมาย:     ${tTemp} °C</div>
+                        <div>- อุณหภูมิห้องจริง (DHT): ${rTemp} °C</div>
+                        <div>- ความชื้นจริง (DHT):     ${rHum} %</div>
+                        <div class="log-header-title">----------------------------------------</div>
+                    `;
+
+                } catch (e) {
+                    console.error('JSON Parse error:', e);
+                }
+            }
+        });
+
+        function controlLight(index) {
+            const state = document.getElementById('light' + index).checked ? 1 : 0;
+            client.publish(TOPIC_CONTROL, `light${index}:${state}`);
+        }
+
+        function controlAC() {
+            const state = document.getElementById('acToggle').checked ? 1 : 0;
+            client.publish(TOPIC_CONTROL, `ac:${state}`);
+        }
+
+        let currentTemp = 25;
+        function adjustTemp(change) {
+            currentTemp += change;
+            if (currentTemp < 16) currentTemp = 16;
+            if (currentTemp > 30) currentTemp = 30;
+            document.getElementById('targetTemp').innerText = currentTemp;
+            client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
+        }
+    </script>
+</body>
+</html>
