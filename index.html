@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Home Santayanon - Mobile Optimized Dashboard</title>
-    <!-- Fonts, Icons & MQTT (ใช้ Cloudflare CDN เสถียรสูงสุดบนเน็ตมือถือ) -->
+    <!-- Fonts, Icons & MQTT -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
@@ -36,14 +36,17 @@
         .card-title { font-size: 1rem; font-weight: 700; color: #1e293b; }
         .card-status { font-size: 0.85rem; color: #64748b; font-weight: 500; }
         
-        .ac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
-        @media (min-width: 768px) { .ac-card { flex-direction: row; justify-content: space-between; padding: 2.5rem; } }
-        .ac-card.active { border-color: #10b981; }
+        .ac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
+        .ac-card.active { border-color: #10b981; box-shadow: 0 15px 30px rgba(16, 185, 129, 0.15); }
+        .ac-top { display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; align-items: center; }
+        @media (min-width: 768px) { .ac-top { flex-direction: row; } }
+        
         .ac-info { display: flex; align-items: center; gap: 1.2rem; }
         .ac-icon { width: 60px; height: 60px; border-radius: 20px; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
         .ac-card.active .ac-icon { background: #10b981; color: #ffffff; }
         @keyframes fan-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .ac-card.active .fan-blade { animation: fan-spin 0.4s linear infinite; }
+        
         .ac-controls { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 20px; width: 100%; flex-wrap: wrap; }
         @media (min-width: 768px) { .ac-controls { width: auto; padding: 1.2rem 2rem; border-radius: 60px; flex-wrap: nowrap; } }
         .real-temp-box, .target-temp-box { display: flex; flex-direction: column; align-items: center; }
@@ -54,7 +57,10 @@
         .temp-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-size: 1rem; cursor: pointer; }
         .temp-display { font-size: 1.5rem; font-weight: 800; color: #1e293b; min-width: 40px; text-align: center; }
 
-        /* หน้าจอ Serial Monitor จำลองขนาดใหญ่ สีเขียวเรืองแสง */
+        .ac-extra-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 1.2rem; }
+        .extra-btn { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 0.8rem; font-size: 0.9rem; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        .extra-btn.active { background: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+
         .system-log-box {
             background: #000000; color: #00ff00; border-radius: 20px; padding: 1.5rem;
             font-family: 'Courier New', Courier, monospace; font-size: 1.05rem; line-height: 1.6;
@@ -128,34 +134,44 @@
 
         <div class="section-title"><i class="fa-solid fa-snowflake"></i> ระบบปรับอากาศ</div>
         <div class="ac-card" id="acCard">
-            <div class="ac-info">
-                <div class="ac-icon"><i class="fa-solid fa-snowflake fan-blade"></i></div>
-                <div>
-                    <div class="card-title" style="font-size: 1.2rem;">เครื่องปรับอากาศหลัก</div>
-                    <div class="card-status" id="acStatusText">ปิดการทำงาน</div>
+            <div class="ac-top">
+                <div class="ac-info">
+                    <div class="ac-icon"><i class="fa-solid fa-snowflake fan-blade"></i></div>
+                    <div>
+                        <div class="card-title" style="font-size: 1.2rem;">เครื่องปรับอากาศหลัก</div>
+                        <div class="card-status" id="acStatusText">ปิดการทำงาน</div>
+                    </div>
+                </div>
+
+                <div class="ac-controls">
+                    <div class="real-temp-box">
+                        <span class="real-temp-label">อุณหภูมิห้อง</span>
+                        <span class="real-temp-value" id="realTemp">--°C</span>
+                    </div>
+                    <div class="real-temp-box">
+                        <span class="real-temp-label">ความชื้น</span>
+                        <span class="real-hum-value" id="realHum">--%</span>
+                    </div>
+                    <div class="target-temp-box">
+                        <span class="target-temp-label">อุณหภูมิเป้าหมาย</span>
+                        <div class="temp-group">
+                            <button class="temp-btn" onclick="adjustTemp(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <span class="temp-display" id="targetTemp">25</span>
+                            <button class="temp-btn" onclick="adjustTemp(1)"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="acToggle" class="advanced-switch ac-switch" onchange="controlAC()">
+                    </div>
                 </div>
             </div>
 
-            <div class="ac-controls">
-                <div class="real-temp-box">
-                    <span class="real-temp-label">อุณหภูมิห้อง</span>
-                    <span class="real-temp-value" id="realTemp">--°C</span>
-                </div>
-                <div class="real-temp-box">
-                    <span class="real-temp-label">ความชื้น</span>
-                    <span class="real-hum-value" id="realHum">--%</span>
-                </div>
-                <div class="target-temp-box">
-                    <span class="target-temp-label">อุณหภูมิเป้าหมาย</span>
-                    <div class="temp-group">
-                        <button class="temp-btn" onclick="adjustTemp(-1)"><i class="fa-solid fa-minus"></i></button>
-                        <span class="temp-display" id="targetTemp">25</span>
-                        <button class="temp-btn" onclick="adjustTemp(1)"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                </div>
-                <div>
-                    <input type="checkbox" id="acToggle" class="advanced-switch ac-switch" onchange="controlAC()">
-                </div>
+            <div class="ac-extra-features">
+                <button class="extra-btn" id="btnSwing" onclick="toggleACFeature('swing')"><i class="fa-solid fa-arrows-split-up-and-left"></i> สวิง (Swing)</button>
+                <button class="extra-btn" id="btnFan" onclick="cycleFanSpeed()"><i class="fa-solid fa-wind"></i> พัดลม: <span id="fanSpeedText">ปานกลาง</span></button>
+                <button class="extra-btn" id="btnTurbo" onclick="toggleACFeature('turbo')"><i class="fa-solid fa-gauge-high"></i> เทอร์โบ</button>
+                <button class="extra-btn" id="btnLight" onclick="toggleACFeature('light')"><i class="fa-solid fa-lightbulb"></i> ไฟจอแอร์</button>
+                <button class="extra-btn" id="btnEco" onclick="toggleACFeature('eco')"><i class="fa-solid fa-leaf"></i> ประหยัดไฟ (ECO)</button>
             </div>
         </div>
 
@@ -172,6 +188,14 @@
 
         let client;
         let espTimeout = null;
+
+        let acDataState = {
+            swing: false,
+            fanSpeed: 2,
+            turbo: false,
+            light: true,
+            eco: false
+        };
 
         try {
             client = mqtt.connect(brokerUrl, {
@@ -222,6 +246,15 @@
                         let rTemp = data.ac && data.ac.realTemp !== undefined ? data.ac.realTemp.toFixed(1) : '--';
                         let rHum = data.ac && data.ac.realHumidity !== undefined ? data.ac.realHumidity.toFixed(1) : '--';
 
+                        if (data.ac) {
+                            acDataState.swing = data.ac.swing ? true : false;
+                            acDataState.fanSpeed = data.ac.fanSpeed !== undefined ? data.ac.fanSpeed : 2;
+                            acDataState.turbo = data.ac.turbo ? true : false;
+                            acDataState.light = data.ac.light !== undefined ? data.ac.light : true;
+                            acDataState.eco = data.ac.eco ? true : false;
+                            updateACUI();
+                        }
+
                         if (data.lights) {
                             for (let i = 0; i < 5; i++) {
                                 const state = data.lights[i] ? true : false;
@@ -268,6 +301,11 @@
                             <div>- อุณหภูมิเป้าหมาย:     ${tTemp} °C</div>
                             <div>- อุณหภูมิห้องจริง (DHT): ${rTemp} °C</div>
                             <div>- ความชื้นจริง (DHT):     ${rHum} %</div>
+                            <div>- สวิง (Swing):         ${acDataState.swing ? 'เปิด' : 'ปิด'}</div>
+                            <div>- ความเร็วพัดลม:        ${acDataState.fanSpeed === 1 ? 'ต่ำ' : (acDataState.fanSpeed === 2 ? 'ปานกลาง' : 'สูง')}</div>
+                            <div>- เทอร์โบ (Turbo):      ${acDataState.turbo ? 'เปิด' : 'ปิด'}</div>
+                            <div>- แสงหน้าจอ (Light):    ${acDataState.light ? 'เปิด' : 'ปิด'}</div>
+                            <div>- ประหยัดไฟ (ECO):      ${acDataState.eco ? 'เปิด' : 'ปิด'}</div>
                             <div class="log-header-title">----------------------------------------</div>
                         `;
 
@@ -278,47 +316,8 @@
             });
         }
 
-        function setConnectedUI() {
-            const badge = document.getElementById('connectionStatus');
-            const icon = document.getElementById('statusIcon');
-            const text = document.getElementById('statusText');
-            if (badge) badge.className = 'live-badge online';
-            if (icon) icon.className = 'indicator-dot';
-            if (text) text.innerText = 'เชื่อมต่อแล้ว';
-        }
+        function updateACUI() {
+            const btnSwing = document.getElementById('btnSwing');
+            if (acDataState.swing) btnSwing.classList.add('active'); else btnSwing.classList.remove('active');
 
-        function setOfflineUI(reason) {
-            const badge = document.getElementById('connectionStatus');
-            const icon = document.getElementById('statusIcon');
-            const text = document.getElementById('statusText');
-            if (badge) badge.className = 'live-badge waiting';
-            if (icon) icon.className = 'fa-solid fa-spinner fa-spin';
-            if (text) text.innerText = 'รอสัญญาณ...';
-            
-            const logBox = document.getElementById('liveLogContent');
-            if (logBox) {
-                logBox.innerHTML = `<div style="color: #ef4444; font-weight: bold;">[WARNING] ${reason}</div>`;
-            }
-        }
-
-        function controlLight(index) {
-            const state = document.getElementById('light' + index).checked ? 1 : 0;
-            if (client) client.publish(TOPIC_CONTROL, `light${index}:${state}`);
-        }
-
-        function controlAC() {
-            const state = document.getElementById('acToggle').checked ? 1 : 0;
-            if (client) client.publish(TOPIC_CONTROL, `ac:${state}`);
-        }
-
-        let currentTemp = 25;
-        function adjustTemp(change) {
-            currentTemp += change;
-            if (currentTemp < 16) currentTemp = 16;
-            if (currentTemp > 30) currentTemp = 30;
-            document.getElementById('targetTemp').innerText = currentTemp;
-            if (client) client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
-        }
-    </script>
-</body>
-</html>
+            const fanText = document.getE
