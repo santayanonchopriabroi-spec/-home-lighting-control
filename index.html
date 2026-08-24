@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Home Santayanon Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kanit', sans-serif; }
-        body { background: #f1f5f9; color: #0f172a; min-height: 100vh; padding: 1rem; display: flex; justify-content: center; align-items: flex-start; }
+        body { background: #f1f5f9; color: #0f172a; min-height: 100vh; padding: 1rem; display: flex; justify-content: center; }
         .dashboard { width: 100%; max-width: 1200px; background: #ffffff; border-radius: 32px; padding: 1.5rem; box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 1rem; }
-        .header h1 { font-size: 1.8rem; font-weight: 700; color: #0284c7; display: flex; align-items: center; gap: 12px; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; color: #0284c7; }
         .live-badge { background: #ffffff; border: 1px solid #cbd5e1; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); display: inline-block; }
+        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; display: inline-block; }
         .live-badge.online { border-color: #86efac; color: #15803d; background: #f0fdf4; }
         .live-badge.waiting { border-color: #fde047; color: #b45309; background: #fefce8; }
         .section-title { font-size: 1.1rem; color: #475569; margin-bottom: 1.2rem; font-weight: 700; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
         @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; } }
-        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 1.2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 1.2rem; }
         .card.active { border-color: #0ea5e9; box-shadow: 0 10px 20px rgba(14, 165, 233, 0.15); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .icon-box { width: 48px; height: 48px; border-radius: 16px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #94a3b8; border: 1px solid #e2e8f0; }
@@ -33,8 +32,8 @@
         .ac-switch:checked { background: #10b981 !important; }
         .card-title { font-size: 1rem; font-weight: 700; color: #1e293b; }
         .card-status { font-size: 0.85rem; color: #64748b; font-weight: 500; }
-        .ac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
-        .ac-card.active { border-color: #10b981; box-shadow: 0 15px 30px rgba(16, 185, 129, 0.15); }
+        .ac-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
+        .ac-card.active { border-color: #10b981; }
         .ac-top { display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; align-items: center; }
         @media (min-width: 768px) { .ac-top { flex-direction: row; } }
         .ac-info { display: flex; align-items: center; gap: 1.2rem; }
@@ -51,9 +50,8 @@
         .temp-display { font-size: 1.5rem; font-weight: 800; color: #1e293b; min-width: 40px; text-align: center; }
         .ac-extra-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 1.2rem; }
         .extra-btn { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 0.8rem; font-size: 0.9rem; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-        .extra-btn.active { background: #10b981; color: #ffffff; border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        .system-log-box { background: #000000; color: #00ff00; border-radius: 20px; padding: 1.5rem; font-family: 'Courier New', Courier, monospace; font-size: 1.05rem; line-height: 1.6; min-height: 350px; max-height: 550px; overflow-y: auto; border: 3px solid #334155; }
-        .system-log-box div { margin-bottom: 4px; }
+        .extra-btn.active { background: #10b981; color: #ffffff; border-color: #10b981; }
+        .system-log-box { background: #000000; color: #00ff00; border-radius: 20px; padding: 1.5rem; font-family: 'Courier New', Courier, monospace; font-size: 1rem; line-height: 1.6; min-height: 300px; max-height: 450px; overflow-y: auto; border: 3px solid #334155; }
         .log-header-title { color: #facc15; font-weight: bold; margin-bottom: 8px; border-bottom: 1px dashed #334155; padding-bottom: 4px; }
     </style>
 </head>
@@ -146,7 +144,7 @@
                     setConnectedUI();
 
                     espTimeout = setTimeout(() => {
-                        setOfflineUI('บอร์ด ESP32 ออฟไลน์ / ถูกถอดปลั๊ก');
+                        setOfflineUI('บอร์ด ESP32 ออฟไลน์');
                     }, 8000);
 
                     try {
@@ -156,7 +154,7 @@
                         let l3 = data.lights && data.lights[2] ? '🟢 เปิด' : '🔴 ปิด';
                         let l4 = data.lights && data.lights[3] ? '🟢 เปิด' : '🔴 ปิด';
                         let l5 = data.lights && data.lights[4] ? '🟢 เปิด' : '🔴 ปิด';
-                        let acSt = data.ac && data.ac.state ? '🟢 เปิดทำงาน' : '🔴 ปิดการทำงาน';
+                        let acSt = data.ac && data.ac.state ? '🟢 เปิด' : '🔴 ปิด';
 
                         if (data.ac) {
                             acDataState.swing = !!data.ac.swing;
@@ -190,10 +188,6 @@
                             document.getElementById('realHum').innerText = (data.ac.realHumidity !== undefined ? data.ac.realHumidity.toFixed(1) : '--') + '%';
                         }
 
-                        let fanLabel = "เบอร์ 2";
-                        if (acDataState.fanSpeed === 1) fanLabel = "เบอร์ 1";
-                        else if (acDataState.fanSpeed === 3) fanLabel = "เบอร์ 3";
-
                         const logBox = document.getElementById('liveLogContent');
                         logBox.innerHTML = `
                             <div class="log-header-title">----------------------------------------</div>
@@ -209,7 +203,7 @@
                             <div>- อุณหภูมิห้องจริง:     ${data.ac.realTemp ? data.ac.realTemp.toFixed(1) : '--'} °C</div>
                             <div>- ความชื้นจริง:         ${data.ac.realHumidity ? data.ac.realHumidity.toFixed(1) : '--'} %</div>
                             <div>- สวิง (Swing):         ${acDataState.swing ? '🟢 เปิด' : '🔴 ปิด'}</div>
-                            <div>- ความเร็วพัดลม:        ${fanLabel}</div>
+                            <div>- ความเร็วพัดลม:        เบอร์ ${acDataState.fanSpeed}</div>
                             <div>- เทอร์โบ (Turbo):      ${acDataState.turbo ? '🟢 เปิด' : '🔴 ปิด'}</div>
                             <div>- ไฟหน้าจอแอร์:          ${acDataState.light ? '🟢 เปิด' : '🔴 ปิด'}</div>
                             <div>- ประหยัดไฟ (ECO):      ${acDataState.eco ? '🟢 เปิด' : '🔴 ปิด'}</div>
@@ -264,4 +258,12 @@
             client.publish(TOPIC_CONTROL, `ac:${state}`);
         }
 
-        let cu
+        let currentTemp = 25;
+        function adjustTemp(change) {
+            currentTemp = Math.min(Math.max(currentTemp + change, 16), 30);
+            document.getElementById('targetTemp').innerText = currentTemp;
+            client.publish(TOPIC_CONTROL, `ac_temp:${currentTemp}`);
+        }
+    </script>
+</body>
+</html>
