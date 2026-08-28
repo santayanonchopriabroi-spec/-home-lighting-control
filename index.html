@@ -232,12 +232,11 @@
 
         <div class="section-title"><i class="fa-solid fa-desktop"></i> หน้าจอแสดงผลสถานะจริงจากบอร์ด</div>
         <div class="system-log-box" id="liveLogContent">
-            <pre style="margin:0; font-family:inherit; color:#000000; font-weight:600;">[SYSTEM] กำลังเริ่มการเชื่อมต่อระบบ...</pre>
+            <pre style="margin:0; font-family:inherit; color:#000000; font-weight:600;">[SYSTEM] กำลังเชื่อมต่อ MQTT Broker...</pre>
         </div>
     </div>
 
     <script>
-        // ใช้ Broker HiveMQ WSS Port 8884 สำหรับ HTTPS / GitHub Pages
         const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
         const TOPIC_CONTROL = 'santayanon/home/control';
         const TOPIC_STATUS = 'santayanon/home/status';
@@ -251,4 +250,6 @@
             client = mqtt.connect(brokerUrl, {
                 clientId: 'web_' + Math.random().toString(16).substr(2, 8),
                 clean: true,
-                connectTimeou
+                connectTimeout: 8000,
+                reconnectPeriod: 3000,
+                keepali
