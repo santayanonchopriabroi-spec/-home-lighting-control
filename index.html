@@ -232,12 +232,13 @@
 
         <div class="section-title"><i class="fa-solid fa-desktop"></i> หน้าจอแสดงผลสถานะจริงจากบอร์ด</div>
         <div class="system-log-box" id="liveLogContent">
-            <pre style="margin:0; font-family:inherit; color:#000000; font-weight:600;">[SYSTEM] กำลังเชื่อมต่อ MQTT Broker...</pre>
+            <pre style="margin:0; font-family:inherit; color:#000000; font-weight:600;">[SYSTEM] กำลังเชื่อมต่อ EMQX Broker...</pre>
         </div>
     </div>
 
     <script>
-        const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
+        // ใช้ WSS ของ EMQX Broker ทะลุเน็ต 5G มือถือ
+        const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
         const TOPIC_CONTROL = 'santayanon/home/control';
         const TOPIC_STATUS = 'santayanon/home/status';
 
@@ -251,5 +252,4 @@
                 clientId: 'web_' + Math.random().toString(16).substr(2, 8),
                 clean: true,
                 connectTimeout: 8000,
-                reconnectPeriod: 3000,
-                keepali
+           
