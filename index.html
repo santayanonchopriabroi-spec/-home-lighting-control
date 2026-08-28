@@ -237,7 +237,7 @@
     </div>
 
     <script>
-        const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
+        const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
         const TOPIC_CONTROL = 'santayanon/home/control';
         const TOPIC_STATUS = 'santayanon/home/status';
 
@@ -246,10 +246,8 @@
         let targetTemp = 25;
         let acDataState = { swing: false, fanSpeed: 2, turbo: false, light: true, eco: false };
 
-        try {
-            client = mqtt.connect(brokerUrl, {
-                clientId: 'web_' + Math.random().toString(16).substr(2, 8),
-                clean: true,
-                connectTimeout: 5000,
-                reconnectPeriod: 2000,
-                keepali
+        // ตั้งเวลาตรวจสอบการเชื่อมต่อ Broker 5 วินาทีแรก
+        let initialConnectTimeout = setTimeout(() => {
+            if (!client || !client.connected) {
+                setOfflineUI('ไม่สามารถเชื่อมต่อ MQTT Broker ได้ (โปรดสลับจาก 5G ไปใช้ Wi-Fi บ้าน)');
+      
