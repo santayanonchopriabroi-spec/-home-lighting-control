@@ -293,4 +293,365 @@
                     <span class="power-val"><span id="acAmpVal">0.00</span> A</span>
                 </div>
                 <div class="power-info-row" style="font-size: 0.78rem;">
-                    <span>ภาระการทำงาน (Load 12A = 1
+                    <span>ภาระการทำงาน (Load 12A = 100%)</span>
+                    <span id="acLoadPctVal">0%</span>
+                </div>
+                <div class="load-bar-bg">
+                    <div class="load-bar-fill" id="acLoadBar"></div>
+                </div>
+                <div class="power-info-row" style="margin-top: 4px; border-top: 1px dashed #cbd5e1; padding-top: 6px;">
+                    <span><i class="fa-solid fa-calendar-day" style="color: #ec4899;"></i> พลังงานวันนี้ (Today Energy)</span>
+                    <span class="power-val" style="color: #ec4899;"><span id="acTodayKwhVal">0.000</span> kWh (<span id="acTodayCostVal">0.00</span> บาท)</span>
+                </div>
+                <div class="power-info-row">
+                    <span><i class="fa-solid fa-gauge" style="color: #10b981;"></i> พลังงานสะสมทั้งหมด (Total)</span>
+                    <span class="power-val" style="color: #10b981;"><span id="acKwhVal">0.000</span> kWh (<span id="acTotalCostVal">0.00</span> บาท)</span>
+                </div>
+            </div>
+
+            <div class="ac-extra-features">
+                <button class="extra-btn" id="btnSwing" onclick="toggleACFeature('swing')"><i class="fa-solid fa-arrows-split-up-and-left"></i> สวิง (Swing)</button>
+                <button class="extra-btn" id="btnFan" onclick="cycleFanSpeed()"><i class="fa-solid fa-wind"></i> พัดลม: <span id="fanSpeedText">เบอร์ 2</span></button>
+                <button class="extra-btn" id="btnTurbo" onclick="toggleACFeature('turbo')"><i class="fa-solid fa-gauge-high"></i> เทอร์โบ</button>
+                <button class="extra-btn" id="btnLight" onclick="toggleACFeature('light')"><i class="fa-solid fa-lightbulb"></i> ไฟจอแอร์</button>
+                <button class="extra-btn" id="btnEco" onclick="toggleACFeature('eco')" style="grid-column: span 2;"><i class="fa-solid fa-leaf"></i> ประหยัดไฟ (ECO)</button>
+            </div>
+        </div>
+
+        <!-- ✅ เพิ่มส่วนแสดงสถานะแบบโค้ดภาษา C ตามที่ขอ -->
+        <div class="section-title"><i class="fa-solid fa-microchip"></i> หน้าจอแสดงผลสถานะจริงจากบอร์ด ESP32</div>
+        <div class="board-status-card">
+            
+            <div class="board-section-title">📡 สถานะการเชื่อมต่อ</div>
+            <div class="board-row">
+                <span class="board-label">MQTT Broker</span>
+                <span class="board-val">broker.emqx.io</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">สถานะบอร์ด</span>
+                <span id="boardConnStatus" class="board-val off">รอข้อมูล...</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">รับข้อมูลล่าสุด</span>
+                <span id="boardLastUpdate" class="board-val">--:--:--</span>
+            </div>
+
+            <div class="board-section-title">🌡️ เซ็นเซอร์สภาพอากาศ</div>
+            <div class="board-row">
+                <span class="board-label">อุณหภูมิห้อง</span>
+                <span id="boardTemp" class="board-val temp">--.- °C</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">ความชื้น</span>
+                <span id="boardHum" class="board-val hum">--.- %</span>
+            </div>
+
+            <div class="board-section-title">❄️ สถานะแอร์ TCL</div>
+            <div class="board-row">
+                <span class="board-label">ระบบแอร์</span>
+                <span id="boardAcState" class="board-val off">ปิด</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">อุณหภูมิเป้าหมาย</span>
+                <span id="boardAcTarget" class="board-val temp">-- °C</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">ความเร็วพัดลม</span>
+                <span id="boardAcFan" class="board-val">เบอร์ -</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">สวิง / เทอร์โบ / ECO</span>
+                <span id="boardAcFeatures" class="board-val">ปิด / ปิด / ปิด</span>
+            </div>
+
+            <div class="board-section-title">💡 สถานะระบบไฟ 5 จุด</div>
+            <div class="board-row">
+                <span class="board-label">ห้องนั่งเล่น / นอน / ครัว / น้ำ / ระเบียง</span>
+                <div class="board-lights" id="boardLights">
+                    <span class="board-light-dot"></span>
+                    <span class="board-light-dot"></span>
+                    <span class="board-light-dot"></span>
+                    <span class="board-light-dot"></span>
+                    <span class="board-light-dot"></span>
+                </div>
+            </div>
+
+            <div class="board-section-title">⚡ มอนิเตอร์พลังงาน</div>
+            <div class="board-row">
+                <span class="board-label">แรงดันไฟฟ้า</span>
+                <span id="boardVolt" class="board-val volt">-- V</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">กระแสไฟฟ้า</span>
+                <span id="boardAmp" class="board-val amp">0.00 A</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">ภาระงาน (12A=100%)</span>
+                <span id="boardLoad" class="board-val load-low">0%</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">พลังงานวันนี้</span>
+                <span id="boardTodayKwh" class="board-val">0.000 kWh</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">ค่าไฟวันนี้ (9 บาท/หน่วย)</span>
+                <span id="boardTodayCost" class="board-val cost">0.00 บาท</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">พลังงานสะสมทั้งหมด</span>
+                <span id="boardTotalKwh" class="board-val">0.000 kWh</span>
+            </div>
+            <div class="board-row">
+                <span class="board-label">ค่าไฟสะสมทั้งหมด</span>
+                <span id="boardTotalCost" class="board-val cost">0.00 บาท</span>
+            </div>
+
+            <!-- ✅ กล่องโค้ดภาษา C แสดงค่าจริงจากบอร์ด -->
+            <div class="board-section-title">📜 โค้ดการทำงานแบบภาษา C — ค่าจริงจากบอร์ด ESP32</div>
+            <div class="board-log-box" id="boardLogContent">
+<pre><span class="c-comment">// ============================================</span>
+<span class="c-comment">//  Home Santayanon ESP32 Firmware</span>
+<span class="c-comment">//  ค่าจริงจากบอร์ด — อัปเดตทันทีทุกครั้ง</span>
+<span class="c-comment">// ============================================</span>
+
+<span class="c-type">#include</span> <span class="c-string">&lt;WiFi.h&gt;</span>
+<span class="c-type">#include</span> <span class="c-string">&lt;PubSubClient.h&gt;</span>
+<span class="c-type">#include</span> <span class="c-string">&lt;DHT.h&gt;</span>
+<span class="c-type">#include</span> <span class="c-string">&lt;IRremoteESP8266.h&gt;</span>
+<span class="c-type">#include</span> <span class="c-string">&lt;PZEM004Tv30.h&gt;</span>
+
+<span class="c-keyword">struct</span> <span class="c-struct">SystemState</span> <span class="c-var">state</span>;
+
+<span class="c-type">void</span> <span class="c-func">setup</span>() {
+    <span class="c-func">Serial.begin</span>(<span class="c-number">115200</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO4</span>, <span class="c-var">INPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO23</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO14</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO15</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO16</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO17</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO18</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">pinMode</span>(<span class="c-pin">GPIO19</span>, <span class="c-var">OUTPUT</span>);
+    <span class="c-func">dht.begin</span>();
+    <span class="c-func">irsend.begin</span>();
+    <span class="c-func">Serial2.begin</span>(<span class="c-number">9600</span>, <span class="c-var">SERIAL_8N1</span>, <span class="c-pin">GPIO21</span>, <span class="c-pin">GPIO22</span>);
+    <span class="c-func">WiFi.begin</span>(<span class="c-string">"Santayanon"</span>, <span class="c-string">"********"</span>);
+    <span class="c-func">mqttClient.connect</span>(<span class="c-string">"ESP32_Santayanon_01"</span>);
+}
+
+<span class="c-type">void</span> <span class="c-func">loop</span>() {
+    <span class="c-func">mqttClient.loop</span>();
+    <span class="c-type">float</span> <span class="c-var">tempC</span> = <span class="c-func">dht.readTemperature</span>();   <span class="c-comment" id="c-val-temp">// --.- °C</span>
+    <span class="c-type">float</span> <span class="c-var">humidity</span> = <span class="c-func">dht.readHumidity</span>();   <span class="c-comment" id="c-val-hum">// --.- %</span>
+    <span class="c-type">float</span> <span class="c-var">voltage</span> = <span class="c-func">pzem.voltage</span>();      <span class="c-comment" id="c-val-volt">// --- V</span>
+    <span class="c-type">float</span> <span class="c-var">currentAmp</span> = <span class="c-func">pzem.current</span>();    <span class="c-comment" id="c-val-amp">// 0.00 A</span>
+    <span class="c-type">float</span> <span class="c-var">loadPercent</span> = (<span class="c-var">currentAmp</span>/<span class="c-number">12</span>)*<span class="c-number">100</span>; <span class="c-comment" id="c-val-load">// 0 %</span>
+    <span class="c-type">float</span> <span class="c-var">todayKwh</span> += <span class="c-var">powerW</span>/<span class="c-number">1000</span>*dt;   <span class="c-comment" id="c-val-kwh">// 0.000 kWh</span>
+    <span class="c-type">float</span> <span class="c-var">todayCost</span> = <span class="c-var">todayKwh</span>*<span class="c-number">9.00f</span>;   <span class="c-comment" id="c-val-cost">// 0.00 บาท</span>
+    <span class="c-func">mqttClient.publish</span>(<span class="c-string">"santayanon/home/status"</span>, json);
+    <span class="c-func">delay</span>(<span class="c-number">50</span>);
+}<span class="c-cursor"></span></pre>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
+        const TOPIC_STATUS = 'santayanon/home/status';
+        const TOPIC_CONTROL = 'santayanon/home/control';
+        const PRICE_PER_UNIT = 9.00;
+
+        let client = null;
+        let isConnected = false;
+        let lastBoardDataTime = 0;
+        const BOARD_TIMEOUT = 10000;
+
+        client = mqtt.connect(BROKER_URL, {
+            clientId: 'web_' + Math.random().toString(16).substr(2, 8),
+            clean: true,
+            connectTimeout: 8000,
+            reconnectPeriod: 3000,
+            keepalive: 30
+        });
+
+        const statusBadge = document.getElementById('connectionStatus');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusText = document.getElementById('statusText');
+
+        function setStatus(mode) {
+            const boardConn = document.getElementById('boardConnStatus');
+            if (mode === 'online') {
+                statusBadge.className = 'live-badge online';
+                statusText.textContent = 'ออนไลน์ ✅';
+                statusIcon.className = 'fa-solid fa-circle-check';
+                boardConn.textContent = 'ส่งข้อมูลปกติ';
+                boardConn.className = 'board-val on';
+            } else if (mode === 'board-offline') {
+                statusBadge.className = 'live-badge waiting';
+                statusText.textContent = 'รอข้อมูลบอร์ด...';
+                statusIcon.className = 'fa-solid fa-circle-exclamation';
+                boardConn.textContent = 'รอข้อมูล...';
+                boardConn.className = 'board-val off';
+            } else {
+                statusBadge.className = 'live-badge waiting';
+                statusText.textContent = 'กำลังเชื่อมต่อ...';
+                statusIcon.className = 'fa-solid fa-spinner fa-spin';
+                boardConn.textContent = 'ขาดการเชื่อมต่อ';
+                boardConn.className = 'board-val off';
+            }
+        }
+
+        client.on('connect', () => {
+            isConnected = true;
+            setStatus('board-offline');
+            client.subscribe(TOPIC_STATUS);
+        });
+
+        client.on('message', (topic, payload) => {
+            try {
+                const d = JSON.parse(payload.toString());
+                lastBoardDataTime = Date.now();
+                setStatus('online');
+                document.getElementById('boardLastUpdate').textContent = new Date().toLocaleTimeString('th-TH');
+
+                // ✅ อัปเดตค่าในโค้ดภาษา C ทันทีทุกครั้งที่ได้รับข้อมูลจากบอร์ด
+                if (d.tempC !== undefined && d.tempC !== null) {
+                    const el = document.getElementById('c-val-temp');
+                    if (el) el.textContent = '// ' + d.tempC.toFixed(1) + ' °C';
+                }
+                if (d.humidity !== undefined && d.humidity !== null) {
+                    const el = document.getElementById('c-val-hum');
+                    if (el) el.textContent = '// ' + d.humidity.toFixed(1) + ' %';
+                }
+                if (d.ac && d.ac.voltage !== undefined) {
+                    const el = document.getElementById('c-val-volt');
+                    if (el) el.textContent = '// ' + d.ac.voltage.toFixed(0) + ' V';
+                }
+                if (d.ac && d.ac.currentAmp !== undefined) {
+                    const el = document.getElementById('c-val-amp');
+                    if (el) el.textContent = '// ' + d.ac.currentAmp.toFixed(2) + ' A';
+                }
+                if (d.ac && d.ac.loadPercent !== undefined) {
+                    const el = document.getElementById('c-val-load');
+                    if (el) el.textContent = '// ' + Math.round(d.ac.loadPercent) + ' %';
+                }
+                if (d.ac && d.ac.todayKwh !== undefined) {
+                    const elKwh = document.getElementById('c-val-kwh');
+                    const elCost = document.getElementById('c-val-cost');
+                    if (elKwh) elKwh.textContent = '// ' + d.ac.todayKwh.toFixed(3) + ' kWh';
+                    if (elCost) elCost.textContent = '// ' + (d.ac.todayKwh * PRICE_PER_UNIT).toFixed(2) + ' บาท';
+                }
+
+                // ✅ อัปเดตหน้าจอทุกค่าทันที เร็วที่สุด
+                if (d.tempC !== undefined && d.tempC !== null) {
+                    document.getElementById('realTemp').textContent = d.tempC.toFixed(1) + '°C';
+                    document.getElementById('tclDispTemp').textContent = d.tempC.toFixed(0);
+                    document.getElementById('boardTemp').textContent = d.tempC.toFixed(1) + ' °C';
+                }
+                if (d.humidity !== undefined && d.humidity !== null) {
+                    document.getElementById('realHum').textContent = d.humidity.toFixed(1) + '%';
+                    document.getElementById('boardHum').textContent = d.humidity.toFixed(1) + ' %';
+                }
+
+                if (d.ac) {
+                    document.getElementById('acToggle').checked = !!d.ac.state;
+                    document.getElementById('acCard').classList.toggle('active', !!d.ac.state);
+                    const boardAcState = document.getElementById('boardAcState');
+                    boardAcState.textContent = d.ac.state ? 'เปิด' : 'ปิด';
+                    boardAcState.className = d.ac.state ? 'board-val on' : 'board-val off';
+
+                    const target = d.ac.targetTemp || 25;
+                    document.getElementById('targetTemp').textContent = target;
+                    document.getElementById('boardAcTarget').textContent = target + ' °C';
+
+                    const fan = d.ac.fanSpeed || 2;
+                    const fanLabels = ['-', 'เบอร์ 1', 'เบอร์ 2', 'เบอร์ 3'];
+                    document.getElementById('fanSpeedText').textContent = d.ac.turbo ? 'เทอร์โบ' : fanLabels[fan] || 'เบอร์ 2';
+                    document.getElementById('boardAcFan').textContent = d.ac.turbo ? 'เทอร์โบ' : fanLabels[fan] || 'เบอร์ -';
+
+                    document.getElementById('btnSwing').classList.toggle('active', !!d.ac.swing);
+                    document.getElementById('btnTurbo').classList.toggle('active', !!d.ac.turbo);
+                    document.getElementById('btnEco').classList.toggle('active', !!d.ac.eco);
+                    document.getElementById('btnLight').classList.toggle('active', !!d.ac.displayLight);
+                    document.getElementById('boardAcFeatures').textContent = 
+                        `${d.ac.swing?'เปิด':'ปิด'} / ${d.ac.turbo?'เปิด':'ปิด'} / ${d.ac.eco?'เปิด':'ปิด'}`;
+
+                    const volt = d.ac.voltage;
+                    const amp = d.ac.currentAmp || 0;
+                    const load = d.ac.loadPercent || 0;
+                    const todayKwh = d.ac.todayKwh || 0;
+                    const totalKwh = d.ac.kwh || 0;
+
+                    document.getElementById('acVoltVal').textContent = volt !== undefined ? volt.toFixed(0) : '--';
+                    document.getElementById('boardVolt').textContent = volt !== undefined ? volt.toFixed(0) + ' V' : '-- V';
+
+                    document.getElementById('acAmpVal').textContent = amp.toFixed(2);
+                    document.getElementById('boardAmp').textContent = amp.toFixed(2) + ' A';
+
+                    document.getElementById('acLoadPctVal').textContent = Math.round(load) + '%';
+                    document.getElementById('acLoadBar').style.width = Math.min(100, load) + '%';
+                    const boardLoad = document.getElementById('boardLoad');
+                    boardLoad.textContent = Math.round(load) + '%';
+                    boardLoad.className = 'board-val ' + (load > 70 ? 'load-high' : load > 40 ? 'load-mid' : 'load-low');
+
+                    document.getElementById('acTodayKwhVal').textContent = todayKwh.toFixed(3);
+                    document.getElementById('acTodayCostVal').textContent = (todayKwh * PRICE_PER_UNIT).toFixed(2);
+                    document.getElementById('boardTodayKwh').textContent = todayKwh.toFixed(3) + ' kWh';
+                    document.getElementById('boardTodayCost').textContent = (todayKwh * PRICE_PER_UNIT).toFixed(2) + ' บาท';
+
+                    document.getElementById('acKwhVal').textContent = totalKwh.toFixed(3);
+                    document.getElementById('acTotalCostVal').textContent = (totalKwh * PRICE_PER_UNIT).toFixed(2);
+                    document.getElementById('boardTotalKwh').textContent = totalKwh.toFixed(3) + ' kWh';
+                    document.getElementById('boardTotalCost').textContent = (totalKwh * PRICE_PER_UNIT).toFixed(2) + ' บาท';
+                }
+
+                if (d.lights && Array.isArray(d.lights)) {
+                    const dots = document.querySelectorAll('#boardLights .board-light-dot');
+                    for (let i = 0; i < 5; i++) {
+                        const on = !!d.lights[i];
+                        document.getElementById('light' + (i+1)).checked = on;
+                        document.getElementById('card-light' + (i+1)).classList.toggle('active', on);
+                        document.getElementById('status-light' + (i+1)).textContent = on ? 'ติด' : 'ปิด';
+                        if (dots[i]) dots[i].classList.toggle('active', on);
+                    }
+                }
+
+            } catch (e) {
+                // ข้ามข้อผิดพลาด
+            }
+        });
+
+        client.on('error', err => { setStatus('waiting'); });
+        client.on('close', () => { isConnected = false; setStatus('waiting'); });
+
+        setInterval(() => {
+            if (isConnected && lastBoardDataTime > 0) {
+                if (Date.now() - lastBoardDataTime > BOARD_TIMEOUT) {
+                    setStatus('board-offline');
+                }
+            }
+        }, 1000);
+
+        function sendCmd(obj) {
+            if (!isConnected) return;
+            client.publish(TOPIC_CONTROL, JSON.stringify(obj));
+        }
+
+        function controlLight(num) {
+            sendCmd({ cmd: 'light', id: num, state: document.getElementById('light'+num).checked ? 1 : 0 });
+        }
+        function controlAC() {
+            sendCmd({ cmd: 'ac_power', state: document.getElementById('acToggle').checked ? 1 : 0 });
+        }
+        function adjustTemp(delta) {
+            const el = document.getElementById('targetTemp');
+            el.textContent = Math.max(16, Math.min(30, parseInt(el.textContent) + delta));
+            sendCmd({ cmd: 'ac_temp', target: parseInt(el.textContent) });
+        }
+        function cycleFanSpeed() { sendCmd({ cmd: 'cycle_fan' }); }
+        function toggleACFeature(name) { sendCmd({ cmd: 'toggle_' + name }); }
+    </script>
+</body>
+</html>
